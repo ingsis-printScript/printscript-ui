@@ -1,5 +1,5 @@
 import { defineConfig } from "cypress";
-import dotenv from 'dotenv'
+import  * as dotenv  from 'dotenv'
 import {FRONTEND_URL} from "./src/utils/constants";
 dotenv.config()
 
