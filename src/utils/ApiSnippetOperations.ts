@@ -79,23 +79,30 @@ export class ApiSnippetOperations implements SnippetOperations {
     };
   }
 
-  async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+  // TODO: al hacer lo de abajo, sacar el eslint-disable y los underscores (son por issues de unused vars)
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createSnippet(_createSnippet: CreateSnippet): Promise<Snippet> {
     throw new Error('Not implemented yet');
   }
 
-  async getSnippetById(id: string): Promise<Snippet | undefined> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getSnippetById(_id: string): Promise<Snippet | undefined> {
     throw new Error('Not implemented yet');
   }
 
-  async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateSnippetById(_id: string, _updateSnippet: UpdateSnippet): Promise<Snippet> {
     throw new Error('Not implemented yet');
   }
 
-  async getUserFriends(name?: string, page?: number, pageSize?: number): Promise<PaginatedUsers> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
     throw new Error('Not implemented yet');
   }
 
-  async shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async shareSnippet(_snippetId: string, _userId: string): Promise<Snippet> {
     throw new Error('Not implemented yet');
   }
 
@@ -111,23 +118,28 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  async formatSnippet(snippet: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async formatSnippet(_snippet: string): Promise<string> {
     throw new Error('Not implemented yet');
   }
 
-  async postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async postTestCase(_testCase: Partial<TestCase>): Promise<TestCase> {
     throw new Error('Not implemented yet');
   }
 
-  async removeTestCase(id: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async removeTestCase(_id: string): Promise<string> {
     throw new Error('Not implemented yet');
   }
 
-  async deleteSnippet(id: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async deleteSnippet(_id: string): Promise<string> {
     throw new Error('Not implemented yet');
   }
 
-  async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async testSnippet(_testCase: Partial<TestCase>): Promise<TestCaseResult> {
     throw new Error('Not implemented yet');
   }
 
@@ -135,11 +147,13 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async modifyFormatRule(_newRules: Rule[]): Promise<Rule[]> {
     throw new Error('Not implemented yet');
   }
 
-  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async modifyLintingRule(_newRules: Rule[]): Promise<Rule[]> {
     throw new Error('Not implemented yet');
   }
 }
