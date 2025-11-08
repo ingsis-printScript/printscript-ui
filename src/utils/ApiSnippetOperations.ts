@@ -81,9 +81,44 @@ export class ApiSnippetOperations implements SnippetOperations {
 
   // TODO: al hacer lo de abajo, sacar el eslint-disable y los underscores (son por issues de unused vars)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async createSnippet(_createSnippet: CreateSnippet): Promise<Snippet> {
-    throw new Error('Not implemented yet');
+  async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+    const formData = new FormData();
+
+    const snippetData = {
+      name: createSnippet.name,
+      description: '', // UI doesn't have description field yet
+      language: createSnippet.language,
+      version: '1.1' // Default version -> modify (pili me dijo que no se esta manejando en ui really, ver como hacer)
+    };
+    formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
+
+    formData.append('content', createSnippet.content);
+
+    const response = await this.client.post<{
+      id: string;
+      userId: string;
+      name: string;
+      description: string;
+      language: string;
+      version: string;
+      contentReference: string;
+    }>('/snippets-management/editor', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    const data = response.data;
+
+    return {
+      id: data.id,
+      name: data.name,
+      content: createSnippet.content,
+      language: data.language,
+      extension: 'ps',
+      compliance: 'pending' as const,
+      author: data.userId,
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
