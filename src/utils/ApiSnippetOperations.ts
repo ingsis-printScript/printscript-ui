@@ -231,8 +231,13 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   async getFileTypes(): Promise<FileType[]> {
-    throw new Error('Not implemented yet');
-  } // agregar un endpoint que traiga lenguajes y versiones...? check tema versiones as well...
+    const response = await this.client.get<Array<{
+      language: string;
+      extension: string;
+    }>>('/snippets-management/config/filetypes');
+
+    return response.data;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async modifyFormatRule(_newRules: Rule[]): Promise<Rule[]> {
