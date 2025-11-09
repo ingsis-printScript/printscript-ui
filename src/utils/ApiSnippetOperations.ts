@@ -220,9 +220,9 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async deleteSnippet(_id: string): Promise<string> {
-    throw new Error('Not implemented yet');
+  async deleteSnippet(id: string): Promise<string> {
+    await this.client.delete(`/snippets-management/${id}`);
+    return id;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
