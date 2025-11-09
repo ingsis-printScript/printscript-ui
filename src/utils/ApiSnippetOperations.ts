@@ -66,7 +66,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: s.name,
       content: '', // Content not included in list endpoint
       language: s.language,
-      extension: 'ps', // Default PrintScript extension
+      extension: 'ps', // TODO: Map language to extension
       compliance: 'pending' as const, // TODO: Get actual compliance status
       author: s.userId,
     }));
@@ -115,20 +115,72 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: data.name,
       content: createSnippet.content,
       language: data.language,
-      extension: 'ps',
-      compliance: 'pending' as const,
+      extension: 'ps', // adaptar from getFileTypes? o sea, que no se ponga siempre ps
+      compliance: 'pending' as const, // TODO
       author: data.userId,
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getSnippetById(_id: string): Promise<Snippet | undefined> {
-    throw new Error('Not implemented yet');
+  async getSnippetById(id: string): Promise<Snippet | undefined> {
+    try {
+      const response = await this.client.get<{
+        id: string;
+        userId: string;
+        name: string;
+        description: string | null;
+        language: string;
+        version: string;
+        content: string;
+      }>(`/snippets-management/${id}`);
+
+      const data = response.data;
+
+      return {
+        id: data.id,
+        name: data.name,
+        content: data.content,
+        language: data.language,
+        extension: 'ps', // TBC
+        compliance: 'pending' as const, // TBC ??
+        author: data.userId,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return undefined;
+      }
+      throw error;
+    }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateSnippetById(_id: string, _updateSnippet: UpdateSnippet): Promise<Snippet> {
-    throw new Error('Not implemented yet');
+  async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+    const formData = new FormData();
+    formData.append('content', updateSnippet.content);
+
+    const response = await this.client.patch<{
+      id: string;
+      userId: string;
+      name: string;
+      description: string | null;
+      language: string;
+      version: string;
+      content: string;
+    }>(`/snippets-management/${id}/content`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    const data = response.data;
+
+    return {
+      id: data.id,
+      name: data.name,
+      content: data.content,
+      language: data.language,
+      extension: 'ps', // idem
+      compliance: 'pending' as const, // idem
+      author: data.userId,
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -180,7 +232,7 @@ export class ApiSnippetOperations implements SnippetOperations {
 
   async getFileTypes(): Promise<FileType[]> {
     throw new Error('Not implemented yet');
-  }
+  } // agregar un endpoint que traiga lenguajes y versiones...? check tema versiones as well...
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async modifyFormatRule(_newRules: Rule[]): Promise<Rule[]> {
