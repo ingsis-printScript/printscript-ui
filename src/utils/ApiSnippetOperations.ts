@@ -6,6 +6,7 @@ import { TestCase } from '../types/TestCase';
 import { TestCaseResult } from './queries';
 import { FileType } from '../types/FileType';
 import { Rule } from '../types/Rule';
+import { SnippetResponse } from '../types/SnippetResponse';
 import autoBind from 'auto-bind';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
@@ -44,15 +45,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     }
 
     const response = await this.client.get<{
-      content: Array<{
-        id: string;
-        userId: string;
-        name: string;
-        description: string;
-        language: string;
-        version: string;
-        contentReference: string;
-      }>;
+      content: SnippetResponse[];
       page: number;
       pageSize: number;
       totalElements: number;
@@ -64,9 +57,9 @@ export class ApiSnippetOperations implements SnippetOperations {
     const snippets = data.content.map((s) => ({
       id: s.id,
       name: s.name,
-      content: '', // Content not included in list endpoint
+      content: s.content, // TODO: If content is never used, remove from backend dto for efficiency
       language: s.language,
-      extension: 'ps', // TODO: Map language to extension
+      extension: s.extension,
       compliance: 'pending' as const, // TODO: Get actual compliance status
       author: s.userId,
     }));
@@ -94,15 +87,7 @@ export class ApiSnippetOperations implements SnippetOperations {
 
     formData.append('content', createSnippet.content);
 
-    const response = await this.client.post<{
-      id: string;
-      userId: string;
-      name: string;
-      description: string;
-      language: string;
-      version: string;
-      contentReference: string;
-    }>('/snippets-management/editor', formData, {
+    const response = await this.client.post<SnippetResponse>('/snippets-management/editor', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -113,9 +98,9 @@ export class ApiSnippetOperations implements SnippetOperations {
     return {
       id: data.id,
       name: data.name,
-      content: createSnippet.content,
+      content: data.content,
       language: data.language,
-      extension: 'ps', // adaptar from getFileTypes? o sea, que no se ponga siempre ps
+      extension: data.extension,
       compliance: 'pending' as const, // TODO
       author: data.userId,
     };
@@ -123,15 +108,7 @@ export class ApiSnippetOperations implements SnippetOperations {
 
   async getSnippetById(id: string): Promise<Snippet | undefined> {
     try {
-      const response = await this.client.get<{
-        id: string;
-        userId: string;
-        name: string;
-        description: string | null;
-        language: string;
-        version: string;
-        content: string;
-      }>(`/snippets-management/${id}`);
+      const response = await this.client.get<SnippetResponse>(`/snippets-management/${id}`);
 
       const data = response.data;
 
@@ -140,8 +117,8 @@ export class ApiSnippetOperations implements SnippetOperations {
         name: data.name,
         content: data.content,
         language: data.language,
-        extension: 'ps', // TBC
-        compliance: 'pending' as const, // TBC ??
+        extension: data.extension,
+        compliance: 'pending' as const, // TODO
         author: data.userId,
       };
     } catch (error) {
@@ -156,15 +133,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     const formData = new FormData();
     formData.append('content', updateSnippet.content);
 
-    const response = await this.client.patch<{
-      id: string;
-      userId: string;
-      name: string;
-      description: string | null;
-      language: string;
-      version: string;
-      content: string;
-    }>(`/snippets-management/${id}/content`, formData, {
+    const response = await this.client.patch<SnippetResponse>(`/snippets-management/${id}/content`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -177,8 +146,8 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: data.name,
       content: data.content,
       language: data.language,
-      extension: 'ps', // idem
-      compliance: 'pending' as const, // idem
+      extension: data.extension,
+      compliance: 'pending' as const, // TODO
       author: data.userId,
     };
   }
