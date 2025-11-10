@@ -35,13 +35,24 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
         onSuccess: () => queryClient.invalidateQueries('listSnippets')
     })
     const {data: fileTypes} = useGetFileTypes();
+    const [version, setVersion] = useState(defaultSnippet?.version ?? "");
+
+    const availableVersions = fileTypes?.find((f) => f.language === language)?.versions ?? [];
+
+    // Set default version when language changes
+    useEffect(() => {
+        if (availableVersions.length > 0 && !version) {
+            setVersion(availableVersions[availableVersions.length - 1]); // Default to latest version
+        }
+    }, [language, availableVersions, version]);
 
     const handleCreateSnippet = async () => {
         const newSnippet: CreateSnippet = {
             name: snippetName,
             content: code,
             language: language,
-            extension: fileTypes?.find((f) => f.language === language)?.extension ?? "prs"
+            extension: fileTypes?.find((f) => f.language === language)?.extension ?? "prs",
+            version: version
         }
         await createSnippet(newSnippet);
         onClose();
@@ -100,6 +111,28 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
                         fileTypes?.map(x => (
                             <MenuItem data-testid={`menu-option-${x.language}`} key={x.language}
                                       value={x.language}>{capitalize((x.language))}</MenuItem>
+                        ))
+                    }
+                </Select>
+            </Box>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+            }}>
+                <InputLabel htmlFor="version">Version</InputLabel>
+                <Select
+                    labelId="version-select-label"
+                    id="version-select"
+                    value={version}
+                    label="Version"
+                    onChange={(e: SelectChangeEvent<string>) => setVersion(e.target.value)}
+                    sx={{width: '50%'}}
+                >
+                    {
+                        availableVersions.map(v => (
+                            <MenuItem data-testid={`menu-option-version-${v}`} key={v}
+                                      value={v}>{v}</MenuItem>
                         ))
                     }
                 </Select>

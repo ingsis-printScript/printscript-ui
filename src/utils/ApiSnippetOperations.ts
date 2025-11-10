@@ -81,7 +81,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: createSnippet.name,
       description: '', // UI doesn't have description field yet
       language: createSnippet.language,
-      version: '1.1' // Default version -> modify (pili me dijo que no se esta manejando en ui really, ver como hacer)
+      version: createSnippet.version
     };
     formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
 
@@ -200,10 +200,7 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   async getFileTypes(): Promise<FileType[]> {
-    const response = await this.client.get<Array<{
-      language: string;
-      extension: string;
-    }>>('/snippets-management/config/filetypes');
+    const response = await this.client.get<FileType[]>('/snippets-management/config/filetypes');
 
     return response.data;
   }
