@@ -14,7 +14,8 @@ const INITIAL_SNIPPETS: Snippet[] = [
     compliance: 'pending',
     author: 'John Doe',
     language: 'printscript',
-    extension: 'prs'
+    extension: 'prs',
+    version: '1.1'
   },
   {
     id: 'c48cf644-fbc1-4649-a8f4-9dd7110640d9',
@@ -23,7 +24,8 @@ const INITIAL_SNIPPETS: Snippet[] = [
     compliance: 'not-compliant',
     author: 'John Doe',
     language: 'printscript',
-    extension: 'prs'
+    extension: 'prs',
+    version: '1.1'
   },
   {
     id: '34bf4b7a-d4a1-48be-bb26-7d9a3be46227',
@@ -32,7 +34,8 @@ const INITIAL_SNIPPETS: Snippet[] = [
     compliance: 'compliant',
     author: 'John Doe',
     language: 'printscript',
-    extension: 'prs'
+    extension: 'prs',
+    version: '1.1'
   }
 ]
 
@@ -142,18 +145,22 @@ const fileTypes: FileType[] = [
   {
     language: "printscript",
     extension: "prs",
+    versions: ["1.0", "1.1"]
   },
   {
     language: "python",
     extension: "py",
+    versions: ["3.8", "3.9", "3.10"]
   },
   {
     language: "java",
     extension: "java",
+    versions: ["11", "17", "21"]
   },
   {
     language: 'golang',
-    extension: 'go'
+    extension: 'go',
+    versions: ["1.20", "1.21"]
   }
 ]
 

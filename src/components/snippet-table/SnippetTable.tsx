@@ -59,7 +59,8 @@ export const SnippetTable = (props: SnippetTableProps) => {
         name: splitName[0],
         content: text,
         language: fileType.language,
-        extension: fileType.extension
+        extension: fileType.extension,
+        version: fileType.versions[fileType.versions.length - 1] ?? '1.1' // Default to latest version
       })
     }).catch(e => {
       console.error(e)

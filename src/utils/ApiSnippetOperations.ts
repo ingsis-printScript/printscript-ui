@@ -60,9 +60,10 @@ export class ApiSnippetOperations implements SnippetOperations {
       content: s.content, // TODO: If content is never used, remove from backend dto for efficiency
       language: s.language,
       extension: s.extension,
+      version: s.version,
       compliance: 'pending' as const, // TODO: Get actual compliance status
       author: s.userId,
-    }));
+    })); // construir algún tipo later, para reusar donde se pueda
 
     return {
       page: data.page,
@@ -101,6 +102,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       content: data.content,
       language: data.language,
       extension: data.extension,
+      version: data.version,
       compliance: 'pending' as const, // TODO
       author: data.userId,
     };
@@ -118,6 +120,7 @@ export class ApiSnippetOperations implements SnippetOperations {
         content: data.content,
         language: data.language,
         extension: data.extension,
+        version: data.version,
         compliance: 'pending' as const, // TODO
         author: data.userId,
       };
@@ -147,6 +150,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       content: data.content,
       language: data.language,
       extension: data.extension,
+      version: data.version,
       compliance: 'pending' as const, // TODO
       author: data.userId,
     };
@@ -200,7 +204,8 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   async getFileTypes(): Promise<FileType[]> {
-    const response = await this.client.get<FileType[]>('/snippets-management/config/filetypes');
+    const response =
+        await this.client.get<FileType[]>('/snippets-management/config/filetypes');
 
     return response.data;
   }
