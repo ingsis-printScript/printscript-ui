@@ -167,11 +167,13 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   async getFormatRules(): Promise<Rule[]> {
-    throw new Error('Not implemented yet');
+    const response = await this.client.get<Rule[]>('/formatter');
+    return response.data;
   }
 
   async getLintingRules(): Promise<Rule[]> {
-    throw new Error('Not implemented yet');
+    const response = await this.client.get<Rule[]>('/linter');
+    return response.data;
   }
 
   async getTestCases(): Promise<TestCase[]> {
@@ -210,13 +212,13 @@ export class ApiSnippetOperations implements SnippetOperations {
     return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async modifyFormatRule(_newRules: Rule[]): Promise<Rule[]> {
-    throw new Error('Not implemented yet');
+  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+    const response = await this.client.put<Rule[]>('/formatter/rules', newRules);
+    return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async modifyLintingRule(_newRules: Rule[]): Promise<Rule[]> {
-    throw new Error('Not implemented yet');
+  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+    const response = await this.client.put<Rule[]>('/linter/rules', newRules);
+    return response.data;
   }
 }
