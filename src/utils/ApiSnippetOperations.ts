@@ -180,9 +180,12 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async formatSnippet(_snippet: string): Promise<string> {
-    throw new Error('Not implemented yet');
+  async formatSnippet(snippetId: string, code: string): Promise<string> {
+    const response = await this.client.post<string>(
+      '/formatter/format',
+      { snippetId, code }
+    );
+    return response.data;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
