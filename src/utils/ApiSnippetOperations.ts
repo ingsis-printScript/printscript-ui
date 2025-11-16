@@ -135,7 +135,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     }
   }
 
-  // TODO: "El usuario/owner puede actualizar el contenido del snippet, y TODOS los DEM datos del snippet."
+  // TODO: "El usuario/owner puede actualizar el contenido del snippet, y TODOS los DEMÁS DATOS del snippet."
   async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
     const formData = new FormData();
     formData.append('content', updateSnippet.content);

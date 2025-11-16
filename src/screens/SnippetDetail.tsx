@@ -115,7 +115,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   }
 
   return (
-      <Box p={4} minWidth={'60vw'}>
+      <Box p={4} minWidth={'60vw'} maxWidth={'60vw'}>
         <Box width={'100%'} p={2} display={'flex'} justifyContent={'flex-end'}>
           <CloseIcon style={{cursor: "pointer"}} onClick={handleCloseModal}/>
         </Box>
@@ -126,7 +126,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
           </>) : <>
             <Typography variant="h4" fontWeight={"bold"}>{snippet?.name ?? "Snippet"}</Typography>
             {snippet?.description && (
-              <Typography variant="body1" color="text.secondary" sx={{mb: 1}}>
+              <Typography variant="body1" color="text.secondary" sx={{mb: 1, wordWrap: 'break-word'}}>
                 {snippet.description}
               </Typography>
             )}
