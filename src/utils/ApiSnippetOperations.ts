@@ -57,7 +57,8 @@ export class ApiSnippetOperations implements SnippetOperations {
     const snippets = data.content.map((s) => ({
       id: s.id,
       name: s.name,
-      content: s.content, // TODO: adapt ui to use snippet description
+      description: s.description ?? '',
+      content: s.content,
       language: s.language,
       extension: s.extension,
       version: s.version,
@@ -80,7 +81,7 @@ export class ApiSnippetOperations implements SnippetOperations {
 
     const snippetData = {
       name: createSnippet.name,
-      description: '', // UI doesn't have description field yet – TODO
+      description: createSnippet.description,
       language: createSnippet.language,
       version: createSnippet.version
     };
@@ -99,6 +100,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     return {
       id: data.id,
       name: data.name,
+      description: data.description ?? '',
       content: data.content,
       language: data.language,
       extension: data.extension,
@@ -117,6 +119,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       return {
         id: data.id,
         name: data.name,
+        description: data.description ?? '',
         content: data.content,
         language: data.language,
         extension: data.extension,
@@ -132,7 +135,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     }
   }
 
-  // TODO: El usuario/owner puede actualizar el contenido del snippet, y todos los demás datos del snippet.
+  // TODO: "El usuario/owner puede actualizar el contenido del snippet, y TODOS los DEM datos del snippet."
   async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
     const formData = new FormData();
     formData.append('content', updateSnippet.content);
@@ -148,6 +151,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     return {
       id: data.id,
       name: data.name,
+      description: data.description ?? '',
       content: data.content,
       language: data.language,
       extension: data.extension,

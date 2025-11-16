@@ -31,6 +31,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
     const [language, setLanguage] = useState(defaultSnippet?.language ?? "printscript");
     const [code, setCode] = useState(defaultSnippet?.content ?? "");
     const [snippetName, setSnippetName] = useState(defaultSnippet?.name ?? "")
+    const [description, setDescription] = useState(defaultSnippet?.description ?? "")
     const {mutateAsync: createSnippet, isLoading: loadingSnippet} = useCreateSnippet({
         onSuccess: () => queryClient.invalidateQueries('listSnippets')
     })
@@ -49,6 +50,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
     const handleCreateSnippet = async () => {
         const newSnippet: CreateSnippet = {
             name: snippetName,
+            description: description,
             content: code,
             language: language,
             extension: fileTypes?.find((f) => f.language === language)?.extension ?? "prs",
@@ -63,6 +65,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
             setCode(defaultSnippet?.content)
             setLanguage(defaultSnippet?.language)
             setSnippetName(defaultSnippet?.name)
+            setDescription(defaultSnippet?.description)
         }
     }, [defaultSnippet]);
 
@@ -92,6 +95,15 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
                 <InputLabel htmlFor="name">Name</InputLabel>
                 <Input onChange={e => setSnippetName(e.target.value)} value={snippetName} id="name"
                        sx={{width: '50%'}}/>
+            </Box>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px'
+            }}>
+                <InputLabel htmlFor="description">Description</InputLabel>
+                <Input onChange={e => setDescription(e.target.value)} value={description} id="description"
+                       sx={{width: '100%'}} multiline rows={2}/>
             </Box>
             <Box sx={{
                 display: 'flex',

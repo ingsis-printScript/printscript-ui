@@ -125,6 +125,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             <CircularProgress/>
           </>) : <>
             <Typography variant="h4" fontWeight={"bold"}>{snippet?.name ?? "Snippet"}</Typography>
+            {snippet?.description && (
+              <Typography variant="body1" color="text.secondary" sx={{mb: 1}}>
+                {snippet.description}
+              </Typography>
+            )}
             <Box display="flex" flexDirection="row" gap="8px" padding="8px">
               <Tooltip title={"Share"}>
                 <IconButton onClick={() => setShareModalOpened(true)}>
