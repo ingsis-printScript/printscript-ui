@@ -66,7 +66,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     if (snippet) {
       setCode(snippet.content);
     }
-  }, [snippet?.id]);
+  }, [snippet]);
 
   useEffect(() => {
     if (formatSnippetData) {
@@ -154,3 +154,4 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
       </Box>
   );
 }
+
