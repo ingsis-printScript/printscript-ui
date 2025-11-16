@@ -57,13 +57,13 @@ export class ApiSnippetOperations implements SnippetOperations {
     const snippets = data.content.map((s) => ({
       id: s.id,
       name: s.name,
-      content: s.content, // TODO: If content is never used, remove from backend dto for efficiency
+      content: s.content, // TODO: adapt ui to use snippet description
       language: s.language,
       extension: s.extension,
       version: s.version,
       compliance: 'pending' as const, // TODO: Get actual compliance status
       author: s.userId,
-    })); // construir algún tipo later, para reusar donde se pueda
+    })); // construir algún tipo later? (para reusar donde se pueda)
 
     return {
       page: data.page,
@@ -80,7 +80,7 @@ export class ApiSnippetOperations implements SnippetOperations {
 
     const snippetData = {
       name: createSnippet.name,
-      description: '', // UI doesn't have description field yet
+      description: '', // UI doesn't have description field yet – TODO
       language: createSnippet.language,
       version: createSnippet.version
     };
@@ -132,6 +132,7 @@ export class ApiSnippetOperations implements SnippetOperations {
     }
   }
 
+  // TODO: El usuario/owner puede actualizar el contenido del snippet, y todos los demás datos del snippet.
   async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
     const formData = new FormData();
     formData.append('content', updateSnippet.content);
@@ -156,14 +157,9 @@ export class ApiSnippetOperations implements SnippetOperations {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
-    throw new Error('Not implemented yet');
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async shareSnippet(_snippetId: string, _userId: string): Promise<Snippet> {
-    throw new Error('Not implemented yet');
+  async deleteSnippet(id: string): Promise<string> {
+      await this.client.delete(`/snippets-management/${id}`);
+      return id;
   }
 
   async getFormatRules(): Promise<Rule[]> {
@@ -176,16 +172,26 @@ export class ApiSnippetOperations implements SnippetOperations {
     return response.data;
   }
 
-  async getTestCases(): Promise<TestCase[]> {
-    throw new Error('Not implemented yet');
+  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+      const response = await this.client.put<Rule[]>('/formatter/rules', newRules);
+      return response.data;
+  }
+
+  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+      const response = await this.client.put<Rule[]>('/linter/rules', newRules);
+      return response.data;
   }
 
   async formatSnippet(snippetId: string, code: string): Promise<string> {
-    const response = await this.client.post<string>(
-      '/formatter/format',
-      { snippetId, code }
-    );
-    return response.data;
+      const response = await this.client.post<string>(
+          '/formatter/format',
+          { snippetId, code } // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
+      );
+      return response.data;
+  }
+
+  async getTestCases(): Promise<TestCase[]> {
+    throw new Error('Not implemented yet');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -198,30 +204,25 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  async deleteSnippet(id: string): Promise<string> {
-    await this.client.delete(`/snippets-management/${id}`);
-    return id;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async testSnippet(_testCase: Partial<TestCase>): Promise<TestCaseResult> {
     throw new Error('Not implemented yet');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
+      throw new Error('Not implemented yet');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async shareSnippet(_snippetId: string, _userId: string): Promise<Snippet> {
+      throw new Error('Not implemented yet');
+  }
+
   async getFileTypes(): Promise<FileType[]> {
-    const response =
-        await this.client.get<FileType[]>('/snippets-management/config/filetypes');
+      const response =
+          await this.client.get<FileType[]>('/snippets-management/config/filetypes');
 
-    return response.data;
-  }
-
-  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-    const response = await this.client.put<Rule[]>('/formatter/rules', newRules);
-    return response.data;
-  }
-
-  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-    const response = await this.client.put<Rule[]>('/linter/rules', newRules);
-    return response.data;
+      return response.data;
   }
 }

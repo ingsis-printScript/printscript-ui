@@ -4,7 +4,7 @@ import {highlight, languages} from "prismjs";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-okaidia.css";
-import {Alert, Box, CircularProgress, IconButton, Tooltip, Typography} from "@mui/material";
+import {Alert, Box, CircularProgress, IconButton, Menu, MenuItem, Tooltip, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {
   useUpdateSnippetById
@@ -26,26 +26,61 @@ type SnippetDetailProps = {
 }
 
 const DownloadButton = ({snippet}: { snippet?: Snippet }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const {mutateAsync: formatSnippet, isLoading: isFormatLoading} = useFormatSnippet();
+
   if (!snippet) return null;
-  const file = new Blob([snippet.content], {type: 'text/plain'});
+
+  const handleDownload = async (formatted: boolean) => {
+    setAnchorEl(null);
+
+    let content = snippet.content;
+
+    if (formatted) {
+      try {
+        content = await formatSnippet({
+          snippetId: snippet.id,
+          code: snippet.content
+        });
+      } catch (error) {
+        console.error("Error formatting snippet:", error);
+        alert("Error formatting snippet. Please try again.");
+        return;
+      }
+    }
+
+    const blob = new Blob([content], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${snippet.name}.${snippet.extension}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <Tooltip title={"Download"}>
-      <IconButton sx={{
-        cursor: "pointer"
-      }}>
-        <a download={`${snippet.name}.${snippet.extension}`} target="_blank"
-           rel="noreferrer" href={URL.createObjectURL(file)} style={{
-          textDecoration: "none",
-          color: "inherit",
-          display: 'flex',
-          alignItems: 'center',
-        }}>
+    <>
+      <Tooltip title="Download">
+        <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
           <Download/>
-        </a>
-      </IconButton>
-    </Tooltip>
-  )
+        </IconButton>
+      </Tooltip>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        <MenuItem onClick={() => handleDownload(false)}>
+          Download Original
+        </MenuItem>
+        <MenuItem onClick={() => handleDownload(true)} disabled={isFormatLoading}>
+          Download Formatted
+        </MenuItem>
+      </Menu>
+    </>
+  );
 }
 
 export const SnippetDetail = (props: SnippetDetailProps) => {
