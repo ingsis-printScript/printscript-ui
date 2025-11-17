@@ -1,3 +1,5 @@
+export type LintStatus = 'PENDING' | 'COMPLIANT' | 'NON_COMPLIANT' | 'FAILED';
+
 export type SnippetResponse = {
   id: string;
   userId: string;
@@ -7,4 +9,6 @@ export type SnippetResponse = {
   extension: string;
   version: string;
   content: string;
+  lintStatus: LintStatus;
+  lintErrors: string[] | null;
 };

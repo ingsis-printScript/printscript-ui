@@ -1,15 +1,29 @@
 import axios, { AxiosInstance } from 'axios';
 import { SnippetOperations } from './snippetOperations';
-import { CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from './snippet';
+import { ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from './snippet';
 import { PaginatedUsers } from './users';
 import { TestCase } from '../types/TestCase';
 import { TestCaseResult } from './queries';
 import { FileType } from '../types/FileType';
 import { Rule } from '../types/Rule';
-import { SnippetResponse } from '../types/SnippetResponse';
+import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
 import autoBind from 'auto-bind';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
+
+// Helper function to map backend LintStatus to frontend ComplianceEnum
+function mapLintStatusToCompliance(lintStatus: LintStatus): ComplianceEnum {
+  switch (lintStatus) {
+    case 'PENDING':
+      return 'pending';
+    case 'COMPLIANT':
+      return 'compliant';
+    case 'NON_COMPLIANT':
+      return 'not-compliant';
+    case 'FAILED':
+      return 'failed';
+  }
+}
 
 export class ApiSnippetOperations implements SnippetOperations {
   private readonly client: AxiosInstance;
@@ -62,9 +76,10 @@ export class ApiSnippetOperations implements SnippetOperations {
       language: s.language,
       extension: s.extension,
       version: s.version,
-      compliance: 'pending' as const, // TODO: Get actual compliance status
+      compliance: mapLintStatusToCompliance(s.lintStatus),
       author: s.userId,
-    })); // construir algún tipo later? (para reusar donde se pueda)
+      lintErrors: s.lintErrors ?? undefined,
+    }));
 
     return {
       page: data.page,
@@ -105,8 +120,9 @@ export class ApiSnippetOperations implements SnippetOperations {
       language: data.language,
       extension: data.extension,
       version: data.version,
-      compliance: 'pending' as const, // TODO
+      compliance: mapLintStatusToCompliance(data.lintStatus),
       author: data.userId,
+      lintErrors: data.lintErrors ?? undefined,
     };
   }
 
@@ -124,8 +140,9 @@ export class ApiSnippetOperations implements SnippetOperations {
         language: data.language,
         extension: data.extension,
         version: data.version,
-        compliance: 'pending' as const, // TODO
+        compliance: mapLintStatusToCompliance(data.lintStatus),
         author: data.userId,
+        lintErrors: data.lintErrors ?? undefined,
       };
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -156,8 +173,9 @@ export class ApiSnippetOperations implements SnippetOperations {
       language: data.language,
       extension: data.extension,
       version: data.version,
-      compliance: 'pending' as const, // TODO
+      compliance: mapLintStatusToCompliance(data.lintStatus),
       author: data.userId,
+      lintErrors: data.lintErrors ?? undefined,
     };
   }
 
