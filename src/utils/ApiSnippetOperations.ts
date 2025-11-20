@@ -205,12 +205,11 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   async formatSnippet(snippetId: string, code: string): Promise<string> {
-      const response = await this.client.post<string>(
+      const response = await this.client.post<{ code: string }>(
           '/formatter/format',
-          { snippetId, code }, // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
-          { responseType: 'text' }
+          { snippetId, code } // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
       );
-      return response.data;
+      return response.data.code;
   }
 
   async getTestCases(): Promise<TestCase[]> {
