@@ -207,7 +207,8 @@ export class ApiSnippetOperations implements SnippetOperations {
   async formatSnippet(snippetId: string, code: string): Promise<string> {
       const response = await this.client.post<string>(
           '/formatter/format',
-          { snippetId, code } // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
+          { snippetId, code }, // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
+          { responseType: 'text' }
       );
       return response.data;
   }
