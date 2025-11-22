@@ -152,16 +152,40 @@ export class ApiSnippetOperations implements SnippetOperations {
     }
   }
 
-  // TODO: "El usuario/owner puede actualizar el contenido del snippet, y TODOS los DEMÁS DATOS del snippet."
   async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
     const formData = new FormData();
-    formData.append('content', updateSnippet.content);
 
-    const response = await this.client.patch<SnippetResponse>(`/snippets-management/${id}/content`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const hasMetadataChanges = updateSnippet.name !== undefined ||
+                                updateSnippet.description !== undefined ||
+                                updateSnippet.language !== undefined ||
+                                updateSnippet.version !== undefined;
+
+    let response: { data: SnippetResponse };
+
+    if (hasMetadataChanges) { // metadata update from modal - all fields present
+      const snippetData = {
+        name: updateSnippet.name,
+        description: updateSnippet.description,
+        language: updateSnippet.language,
+        version: updateSnippet.version
+      };
+      formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
+      formData.append('content', updateSnippet.content);
+
+      response = await this.client.put<SnippetResponse>(`/snippets-management/${id}/editor`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else { // content-only update from inline editor
+      formData.append('content', updateSnippet.content);
+
+      response = await this.client.patch<SnippetResponse>(`/snippets-management/${id}/content`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
 
     const data = response.data;
 

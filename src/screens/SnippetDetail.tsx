@@ -11,14 +11,15 @@ import {
 } from "../utils/queries.tsx";
 import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
-import {BugReport, Delete, Download, Save, Share} from "@mui/icons-material";
+import {BugReport, Delete, Download, Edit, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
 import {TestSnippetModal} from "../components/snippet-test/TestSnippetModal.tsx";
-import {Snippet} from "../utils/snippet.ts";
+import {CreateSnippet, Snippet} from "../utils/snippet.ts";
 import {SnippetExecution} from "./SnippetExecution.tsx";
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";
 import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
+import {AddSnippetModal} from "../components/snippet-table/AddSnippetModal.tsx";
 
 type SnippetDetailProps = {
   id: string;
@@ -91,6 +92,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   const [shareModalOpened, setShareModalOpened] = useState(false)
   const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] = useState(false)
   const [testModalOpened, setTestModalOpened] = useState(false);
+  const [editModalOpened, setEditModalOpened] = useState(false);
 
   const {data: snippet, isLoading} = useGetSnippetById(id);
   const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet()
@@ -114,6 +116,20 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     shareSnippet({snippetId: id, userId})
   }
 
+  async function handleEditSnippet(snippetData: CreateSnippet) {
+    await updateSnippet({
+      id: id,
+      updateSnippet: {
+        name: snippetData.name,
+        description: snippetData.description,
+        content: snippetData.content,
+        language: snippetData.language,
+        version: snippetData.version
+      }
+    });
+    setEditModalOpened(false);
+  }
+
   return (
       <Box p={4} minWidth={'60vw'} maxWidth={'60vw'}>
         <Box width={'100%'} p={2} display={'flex'} justifyContent={'flex-end'}>
@@ -131,6 +147,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
               </Typography>
             )}
             <Box display="flex" flexDirection="row" gap="8px" padding="8px">
+              <Tooltip title={"Edit Details"}>
+                <IconButton onClick={() => setEditModalOpened(true)}>
+                  <Edit/>
+                </IconButton>
+              </Tooltip>
               <Tooltip title={"Share"}>
                 <IconButton onClick={() => setShareModalOpened(true)}>
                   <Share/>
@@ -191,6 +212,13 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                            onShare={handleShareSnippet}/>
         <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)}/>
         <DeleteConfirmationModal open={deleteConfirmationModalOpen} onClose={() => setDeleteConfirmationModalOpen(false)} id={snippet?.id ?? ""} setCloseDetails={handleCloseModal} />
+        <AddSnippetModal
+          open={editModalOpened}
+          onClose={() => setEditModalOpened(false)}
+          title="Edit Snippet"
+          defaultSnippet={snippet}
+          onSubmit={handleEditSnippet}
+        />
       </Box>
   );
 }

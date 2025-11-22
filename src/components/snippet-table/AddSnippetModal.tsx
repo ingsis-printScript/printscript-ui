@@ -23,10 +23,12 @@ import {ModalWrapper} from "../common/ModalWrapper.tsx";
 import {useCreateSnippet, useGetFileTypes} from "../../utils/queries.tsx";
 import {queryClient} from "../../App.tsx";
 
-export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
+export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Snippet", onSubmit}: {
     open: boolean,
     onClose: () => void,
-    defaultSnippet?: CreateSnippetWithLang
+    defaultSnippet?: CreateSnippetWithLang,
+    title?: string,
+    onSubmit?: (snippet: CreateSnippet) => void | Promise<void>
 }) => {
     const [language, setLanguage] = useState(defaultSnippet?.language ?? "printscript");
     const [code, setCode] = useState(defaultSnippet?.content ?? "");
@@ -47,8 +49,8 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
         }
     }, [language, availableVersions, version]);
 
-    const handleCreateSnippet = async () => {
-        const newSnippet: CreateSnippet = {
+    const handleSaveSnippet = async () => {
+        const snippetData: CreateSnippet = {
             name: snippetName,
             description: description,
             content: code,
@@ -56,7 +58,12 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
             extension: fileTypes?.find((f) => f.language === language)?.extension ?? "prs",
             version: version
         }
-        await createSnippet(newSnippet);
+
+        if (onSubmit) { // if a method is provided, it'll be used. Fallback is creating a new snippet
+            await onSubmit(snippetData);
+        } else {
+            await createSnippet(snippetData);
+        }
         onClose();
     }
 
@@ -75,11 +82,11 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet}: {
                 <Box sx={{display: 'flex', flexDirection: "row", justifyContent: "space-between"}}>
                     <Typography id="modal-modal-title" variant="h5" component="h2"
                                 sx={{display: 'flex', alignItems: 'center'}}>
-                        Add Snippet
+                        {title}
                     </Typography>
                     <Button disabled={!snippetName || !code || !language || loadingSnippet} variant="contained"
                             disableRipple
-                            sx={{boxShadow: 0}} onClick={handleCreateSnippet}>
+                            sx={{boxShadow: 0}} onClick={handleSaveSnippet}>
                         <Box pr={1} display={"flex"} alignItems={"center"} justifyContent={"center"}>
                             {loadingSnippet ? <CircularProgress size={24}/> : <Save/>}
                         </Box>

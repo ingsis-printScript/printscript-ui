@@ -20,7 +20,11 @@ export type CreateSnippet = {
 export type CreateSnippetWithLang = CreateSnippet & { language: string }
 
 export type UpdateSnippet = {
-  content: string
+  name?: string;
+  description?: string;
+  content: string;
+  language?: string;
+  version?: string;
 }
 
 export type Snippet = CreateSnippet & {
