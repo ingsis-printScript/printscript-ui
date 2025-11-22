@@ -146,6 +146,14 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                 {snippet.description}
               </Typography>
             )}
+            <Box display="flex" gap={2} mb={1}>
+              <Typography variant="body2" color="text.secondary">
+                Language: <strong>{snippet?.language}</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Version: <strong>{snippet?.version}</strong>
+              </Typography>
+            </Box>
             <Box display="flex" flexDirection="row" gap="8px" padding="8px">
               <Tooltip title={"Edit Details"}>
                 <IconButton onClick={() => setEditModalOpened(true)}>

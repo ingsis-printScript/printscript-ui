@@ -73,6 +73,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
             setLanguage(defaultSnippet?.language)
             setSnippetName(defaultSnippet?.name)
             setDescription(defaultSnippet?.description)
+            setVersion(defaultSnippet?.version)
         }
     }, [defaultSnippet]);
 
