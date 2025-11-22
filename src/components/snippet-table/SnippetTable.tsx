@@ -5,17 +5,20 @@ import {
   InputBase,
   Menu,
   MenuItem,
+  Select,
+  SelectChangeEvent,
   styled,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TablePagination,
-  TableRow
+  TableRow,
+  Typography
 } from "@mui/material";
 import {AddSnippetModal} from "./AddSnippetModal.tsx";
 import {useRef, useState} from "react";
-import {Add, Search} from "@mui/icons-material";
+import {Add, Clear, Search} from "@mui/icons-material";
 import {LoadingSnippetRow, SnippetRow} from "./SnippetRow.tsx";
 import {CreateSnippetWithLang, getFileLanguage, Snippet} from "../../utils/snippet.ts";
 import {usePaginationContext} from "../../contexts/paginationContext.tsx";
@@ -27,10 +30,15 @@ type SnippetTableProps = {
   snippets?: Snippet[];
   loading: boolean;
   handleSearchSnippet: (snippetName: string) => void;
+  language?: string;
+  lintStatus?: string;
+  onLanguageChange: (language: string | undefined) => void;
+  onLintStatusChange: (lintStatus: string | undefined) => void;
+  onClearFilters: () => void;
 }
 
 export const SnippetTable = (props: SnippetTableProps) => {
-  const {snippets, handleClickSnippet, loading,handleSearchSnippet} = props;
+  const {snippets, handleClickSnippet, loading, handleSearchSnippet, language, lintStatus, onLanguageChange, onLintStatusChange, onClearFilters} = props;
   const [addModalOpened, setAddModalOpened] = useState(false);
   const [popoverMenuOpened, setPopoverMenuOpened] = useState(false)
   const [snippet, setSnippet] = useState<CreateSnippetWithLang | undefined>()
@@ -95,6 +103,48 @@ export const SnippetTable = (props: SnippetTableProps) => {
             Add Snippet
           </Button>
         </Box>
+
+        {/* Filters Row */}
+        <Box display="flex" flexDirection="row" alignItems="center" gap={2} mt={2} mb={2} p={2} sx={{background: 'white', borderRadius: 1}}>
+          <Typography variant="body2" fontWeight="bold">Filters:</Typography>
+
+          <Select
+            value={language || ''}
+            onChange={(e: SelectChangeEvent) => onLanguageChange(e.target.value || undefined)}
+            displayEmpty
+            size="small"
+            sx={{minWidth: 150}}
+          >
+            <MenuItem value="">All Languages</MenuItem>
+            {fileTypes?.map((ft) => (
+              <MenuItem key={ft.language} value={ft.language}>{ft.language}</MenuItem>
+            ))}
+          </Select>
+
+          <Select
+            value={lintStatus || ''}
+            onChange={(e: SelectChangeEvent) => onLintStatusChange(e.target.value || undefined)}
+            displayEmpty
+            size="small"
+            sx={{minWidth: 150}}
+          >
+            <MenuItem value="">All Compliance</MenuItem>
+            <MenuItem value="COMPLIANT">Compliant</MenuItem>
+            <MenuItem value="NON_COMPLIANT">Non-Compliant</MenuItem>
+            <MenuItem value="PENDING">Pending</MenuItem>
+            <MenuItem value="FAILED">Failed</MenuItem>
+          </Select>
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Clear />}
+            onClick={onClearFilters}
+          >
+            Clear Filters
+          </Button>
+        </Box>
+
         <Table size="medium" sx={{borderSpacing: "0 10px", borderCollapse: "separate"}}>
           <TableHead>
             <TableRow sx={{fontWeight: 'bold'}}>

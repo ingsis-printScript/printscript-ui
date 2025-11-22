@@ -52,10 +52,16 @@ export class ApiSnippetOperations implements SnippetOperations {
     autoBind(this);
   }
 
-  async listSnippetDescriptors(page: number, pageSize: number, snippetName?: string): Promise<PaginatedSnippets> {
+  async listSnippetDescriptors(page: number, pageSize: number, snippetName?: string, language?: string, lintStatus?: string): Promise<PaginatedSnippets> {
     const params: Record<string, string | number> = { page, pageSize };
     if (snippetName) {
       params.name = snippetName;
+    }
+    if (language) {
+      params.language = language;
+    }
+    if (lintStatus) {
+      params.lintStatus = lintStatus;
     }
 
     const response = await this.client.get<{

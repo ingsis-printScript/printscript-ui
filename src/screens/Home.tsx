@@ -12,9 +12,11 @@ const HomeScreen = () => {
   const {id: paramsId} = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [snippetName, setSnippetName] = useState('');
+  const [language, setLanguage] = useState<string | undefined>(undefined);
+  const [lintStatus, setLintStatus] = useState<string | undefined>(undefined);
   const [snippetId, setSnippetId] = useState<string | null>(null)
   const {page, page_size, count, handleChangeCount} = usePaginationContext()
-  const {data, isLoading} = useGetSnippets(page, page_size, snippetName)
+  const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus)
 
   useEffect(() => {
     if (data?.count && data.count != count) {
@@ -43,10 +45,26 @@ const HomeScreen = () => {
     setSearchTerm(snippetName);
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSnippetName('');
+    setLanguage(undefined);
+    setLintStatus(undefined);
+  };
+
   return (
       <>
-        <SnippetTable loading={isLoading} handleClickSnippet={setSnippetId} snippets={data?.snippets}
-                      handleSearchSnippet={handleSearchSnippet}/>
+        <SnippetTable
+          loading={isLoading}
+          handleClickSnippet={setSnippetId}
+          snippets={data?.snippets}
+          handleSearchSnippet={handleSearchSnippet}
+          language={language}
+          lintStatus={lintStatus}
+          onLanguageChange={setLanguage}
+          onLintStatusChange={setLintStatus}
+          onClearFilters={handleClearFilters}
+        />
         <Drawer open={!!snippetId} anchor={"right"} onClose={handleCloseModal}>
           {snippetId && <SnippetDetail handleCloseModal={handleCloseModal} id={snippetId}/>}
         </Drawer>
