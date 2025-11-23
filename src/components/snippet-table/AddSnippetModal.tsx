@@ -1,4 +1,5 @@
 import {
+    Alert,
     Box,
     Button,
     capitalize,
@@ -22,6 +23,7 @@ import {CreateSnippet, CreateSnippetWithLang} from "../../utils/snippet.ts";
 import {ModalWrapper} from "../common/ModalWrapper.tsx";
 import {useCreateSnippet, useGetFileTypes} from "../../utils/queries.tsx";
 import {queryClient} from "../../App.tsx";
+import axios from "axios";
 
 export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Snippet", onSubmit}: {
     open: boolean,
@@ -34,6 +36,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
     const [code, setCode] = useState(defaultSnippet?.content ?? "");
     const [snippetName, setSnippetName] = useState(defaultSnippet?.name ?? "")
     const [description, setDescription] = useState(defaultSnippet?.description ?? "")
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const {mutateAsync: createSnippet, isLoading: loadingSnippet} = useCreateSnippet({
         onSuccess: () => queryClient.invalidateQueries('listSnippets')
     })
@@ -50,6 +53,8 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
     }, [language, availableVersions, version]);
 
     const handleSaveSnippet = async () => {
+        setValidationErrors([]);
+
         const snippetData: CreateSnippet = {
             name: snippetName,
             description: description,
@@ -59,12 +64,25 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
             version: version
         }
 
-        if (onSubmit) { // if a method is provided, it'll be used. Fallback is creating a new snippet
-            await onSubmit(snippetData);
-        } else {
-            await createSnippet(snippetData);
+        try {
+            if (onSubmit) { // uses provided method (like editing a snippet). If none provided, it creates a new snippet
+                await onSubmit(snippetData);
+            } else {
+                await createSnippet(snippetData);
+            }
+            onClose();
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 400) {
+                const errorData = error.response.data;
+                if (errorData.errors && Array.isArray(errorData.errors)) {
+                    setValidationErrors(errorData.errors);
+                } else {
+                    setValidationErrors([errorData.message || "Validation failed"]);
+                }
+            } else {
+                setValidationErrors(["An unexpected error occurred. Please try again."]);
+            }
         }
-        onClose();
     }
 
     useEffect(() => {
@@ -76,6 +94,10 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
             setVersion(defaultSnippet?.version)
         }
     }, [defaultSnippet]);
+
+    useEffect(() => {
+        if (!open) setValidationErrors([]);
+    }, [open]);
 
     return (
         <ModalWrapper open={open} onClose={onClose}>
@@ -95,6 +117,16 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
                     </Button>
                 </Box>
             }
+            {validationErrors.length > 0 && (
+                <Alert severity="error" sx={{mt: 2}}>
+                    <Typography variant="subtitle2" fontWeight="bold">Validation Errors:</Typography>
+                    <ul style={{margin: '8px 0', paddingLeft: '20px'}}>
+                        {validationErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                        ))}
+                    </ul>
+                </Alert>
+            )}
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
