@@ -14,6 +14,7 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  TableSortLabel,
   Typography
 } from "@mui/material";
 import {AddSnippetModal} from "./AddSnippetModal.tsx";
@@ -35,10 +36,13 @@ type SnippetTableProps = {
   onLanguageChange: (language: string | undefined) => void;
   onLintStatusChange: (lintStatus: string | undefined) => void;
   onClearFilters: () => void;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+  onSort: (field: string) => void;
 }
 
 export const SnippetTable = (props: SnippetTableProps) => {
-  const {snippets, handleClickSnippet, loading, handleSearchSnippet, language, lintStatus, onLanguageChange, onLintStatusChange, onClearFilters} = props;
+  const {snippets, handleClickSnippet, loading, handleSearchSnippet, language, lintStatus, onLanguageChange, onLintStatusChange, onClearFilters, sortBy, sortOrder, onSort} = props;
   const [addModalOpened, setAddModalOpened] = useState(false);
   const [popoverMenuOpened, setPopoverMenuOpened] = useState(false)
   const [snippet, setSnippet] = useState<CreateSnippetWithLang | undefined>()
@@ -148,10 +152,34 @@ export const SnippetTable = (props: SnippetTableProps) => {
         <Table size="medium" sx={{borderSpacing: "0 10px", borderCollapse: "separate"}}>
           <TableHead>
             <TableRow sx={{fontWeight: 'bold'}}>
-              <StyledTableCell sx={{fontWeight: "bold"}}>Name</StyledTableCell>
-              <StyledTableCell sx={{fontWeight: "bold"}}>Language</StyledTableCell>
+              <StyledTableCell sx={{fontWeight: "bold"}}>
+                <TableSortLabel
+                  active={sortBy === 'name'}
+                  direction={sortBy === 'name' ? (sortOrder === 'ASC' ? 'asc' : 'desc') : 'asc'}
+                  onClick={() => onSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell sx={{fontWeight: "bold"}}>
+                <TableSortLabel
+                  active={sortBy === 'language'}
+                  direction={sortBy === 'language' ? (sortOrder === 'ASC' ? 'asc' : 'desc') : 'asc'}
+                  onClick={() => onSort('language')}
+                >
+                  Language
+                </TableSortLabel>
+              </StyledTableCell>
               <StyledTableCell sx={{fontWeight: "bold"}}>Author</StyledTableCell>
-              <StyledTableCell sx={{fontWeight: "bold"}}>Conformance</StyledTableCell>
+              <StyledTableCell sx={{fontWeight: "bold"}}>
+                <TableSortLabel
+                  active={sortBy === 'lintStatus'}
+                  direction={sortBy === 'lintStatus' ? (sortOrder === 'ASC' ? 'asc' : 'desc') : 'asc'}
+                  onClick={() => onSort('lintStatus')}
+                >
+                  Conformance
+                </TableSortLabel>
+              </StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>{

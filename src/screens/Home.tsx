@@ -14,9 +14,11 @@ const HomeScreen = () => {
   const [snippetName, setSnippetName] = useState('');
   const [language, setLanguage] = useState<string | undefined>(undefined);
   const [lintStatus, setLintStatus] = useState<string | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
   const [snippetId, setSnippetId] = useState<string | null>(null)
   const {page, page_size, count, handleChangeCount} = usePaginationContext()
-  const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus)
+  const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus, sortBy, sortOrder)
 
   useEffect(() => {
     if (data?.count && data.count != count) {
@@ -52,6 +54,15 @@ const HomeScreen = () => {
     setLintStatus(undefined);
   };
 
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
+    } else {
+      setSortBy(field);
+      setSortOrder('ASC');
+    }
+  };
+
   return (
       <>
         <SnippetTable
@@ -64,6 +75,9 @@ const HomeScreen = () => {
           onLanguageChange={setLanguage}
           onLintStatusChange={setLintStatus}
           onClearFilters={handleClearFilters}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
         />
         <Drawer open={!!snippetId} anchor={"right"} onClose={handleCloseModal}>
           {snippetId && <SnippetDetail handleCloseModal={handleCloseModal} id={snippetId}/>}
