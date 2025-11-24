@@ -15,7 +15,7 @@ export const useSnippetExecution = () => {
 
   const connect = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/api/snippets/execute`;
+    const wsUrl = `${protocol}//${window.location.host}/api/snippet-service/snippets/execute`;
 
     const ws = new WebSocket(wsUrl);
 
