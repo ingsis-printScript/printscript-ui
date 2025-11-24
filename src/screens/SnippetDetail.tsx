@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import Editor from "react-simple-code-editor";
 import {highlight, languages} from "prismjs";
 import "prismjs/components/prism-clike";
@@ -11,11 +11,11 @@ import {
 } from "../utils/queries.tsx";
 import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
-import {BugReport, Delete, Download, Edit, Save, Share} from "@mui/icons-material";
+import {BugReport, Delete, Download, Edit, PlayArrow, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
 import {TestSnippetModal} from "../components/snippet-test/TestSnippetModal.tsx";
 import {CreateSnippet, Snippet} from "../utils/snippet.ts";
-import {SnippetExecution} from "./SnippetExecution.tsx";
+import {SnippetExecution, SnippetExecutionHandle} from "./SnippetExecution.tsx";
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";
 import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
@@ -93,11 +93,19 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] = useState(false)
   const [testModalOpened, setTestModalOpened] = useState(false);
   const [editModalOpened, setEditModalOpened] = useState(false);
+  const executionRef = useRef<SnippetExecutionHandle>(null);
 
   const {data: snippet, isLoading} = useGetSnippetById(id);
   const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet()
   const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} = useFormatSnippet()
   const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} = useUpdateSnippetById({onSuccess: () => queryClient.invalidateQueries(['snippet', id])})
+
+  const handleRunSnippet = () => {
+    if (snippet && executionRef.current) {
+      executionRef.current.connect();
+      executionRef.current.startExecution(code, snippet.version);
+    }
+  };
 
   useEffect(() => {
     if (snippet) {
@@ -171,12 +179,11 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                 </IconButton>
               </Tooltip>
               <DownloadButton snippet={snippet}/>
-              {/*<Tooltip title={runSnippet ? "Stop run" : "Run"}>*/}
-              {/*  <IconButton onClick={() => setRunSnippet(!runSnippet)}>*/}
-              {/*    {runSnippet ? <StopRounded/> : <PlayArrow/>}*/}
-              {/*  </IconButton>*/}
-              {/*</Tooltip>*/}
-              {/* TODO: we can implement a live mode*/}
+              <Tooltip title="Run">
+                <IconButton onClick={handleRunSnippet}>
+                  <PlayArrow/>
+                </IconButton>
+              </Tooltip>
               <Tooltip title={"Format"}>
                 <IconButton onClick={() => formatSnippet({ snippetId: id, code })} disabled={isFormatLoading}>
                   <ReadMoreIcon />
@@ -211,7 +218,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             </Box>
             <Box pt={1} flex={1} marginTop={2}>
               <Alert severity="info">Output</Alert>
-              <SnippetExecution />
+              <SnippetExecution ref={executionRef} />
             </Box>
           </>
         }

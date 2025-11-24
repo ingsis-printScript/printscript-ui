@@ -2,21 +2,31 @@ import {OutlinedInput} from "@mui/material";
 import {highlight, languages} from "prismjs";
 import Editor from "react-simple-code-editor";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
-import {useState} from "react";
+import {forwardRef, useImperativeHandle, useState} from "react";
+import {useSnippetExecution} from "../hooks/useSnippetExecution";
 
-export const SnippetExecution = () => {
-  // Here you should provide all the logic to connect to your sockets.
-  const [input, setInput] = useState<string>("")
-  const [output, setOutput] = useState<string[]>([]);
+export interface SnippetExecutionHandle {
+  startExecution: (code: string, version: string) => void;
+  connect: () => void;
+  disconnect: () => void;
+}
 
-  //TODO: get the output from the server
-  const code = output.join("\n")
+export const SnippetExecution = forwardRef<SnippetExecutionHandle>((_, ref) => {
+  const [input, setInput] = useState<string>("");
+  const { output, sendInput, connect, disconnect, startExecution } = useSnippetExecution();
+
+  useImperativeHandle(ref, () => ({
+    startExecution,
+    connect,
+    disconnect,
+  }));
+
+  const code = output.join("\n");
 
   const handleEnter = (event: { key: string }) => {
     if (event.key === 'Enter') {
-      //TODO: logic to send inputs to server
-      setOutput([...output, input])
-      setInput("")
+      sendInput(input);
+      setInput("");
     }
   };
 
@@ -37,5 +47,5 @@ export const SnippetExecution = () => {
         </Bòx>
         <OutlinedInput onKeyDown={handleEnter} value={input} onChange={e => setInput(e.target.value)} placeholder="Type here" fullWidth/>
       </>
-    )
-}
+    );
+});
