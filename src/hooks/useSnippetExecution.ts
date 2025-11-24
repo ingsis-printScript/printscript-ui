@@ -12,6 +12,7 @@ export const useSnippetExecution = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const pendingStartRef = useRef<{ code: string; version: string } | null>(null);
 
   const connect = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -22,6 +23,13 @@ export const useSnippetExecution = () => {
     ws.onopen = () => {
       console.log('WebSocket connected');
       setIsConnected(true);
+      const pending = pendingStartRef.current;
+      if (pending) {
+        const message: WebSocketMessage = { type: 'start', ...pending };
+        ws.send(JSON.stringify(message));
+        setIsExecuting(true);
+        pendingStartRef.current = null;
+      }
     };
 
     ws.onmessage = (event) => {
@@ -67,21 +75,27 @@ export const useSnippetExecution = () => {
   };
 
   const startExecution = (code: string, version: string) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket is not connected');
+    setOutput([]);
+    pendingStartRef.current = { code, version };
+
+    if (!wsRef.current) {
+      connect();
       return;
     }
 
-    setOutput([]);
-    setIsExecuting(true);
+    if (wsRef.current.readyState === WebSocket.CONNECTING) {
+      return; // will be sent on open
+    }
 
-    const message: WebSocketMessage = {
-      type: 'start',
-      code,
-      version,
-    };
+    if (wsRef.current.readyState === WebSocket.OPEN) {
+      const message: WebSocketMessage = { type: 'start', code, version };
+      wsRef.current.send(JSON.stringify(message));
+      setIsExecuting(true);
+      pendingStartRef.current = null;
+      return;
+    }
 
-    wsRef.current.send(JSON.stringify(message));
+    console.error('WebSocket is not connected');
   };
 
   const sendInput = (input: string) => {
