@@ -8,6 +8,7 @@ import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
 import {useAuth0} from "@auth0/auth0-react";
 import {useEffect} from "react";
+import { RelationshipType } from "../types/Relationship.ts";
 
 
 export const useSnippetsOperations = () => {
@@ -29,13 +30,13 @@ export const useSnippetsOperations = () => {
 export const useGetSnippets = (
             page: number = 0, pageSize: number = 10, 
             snippetName?: string, language?: string, lintStatus?: string, 
-            sortBy?: string, sortOrder?: string
+            sortBy?: string, sortOrder?: string, relationshipType: RelationshipType = "owner"
   ) => {
   const snippetOperations = useSnippetsOperations()
 
   return useQuery<PaginatedSnippets, 
-                  Error>(['listSnippets', page,pageSize,snippetName,language,lintStatus,sortBy,sortOrder], () =>
-                            snippetOperations.listSnippetDescriptors(page, pageSize,snippetName,language,lintStatus,sortBy,sortOrder));
+                  Error>(['listSnippets', page,pageSize,snippetName,language,lintStatus,sortBy,sortOrder, relationshipType], () =>
+                            snippetOperations.listSnippetDescriptors(page, pageSize,snippetName,language,lintStatus,sortBy,sortOrder, relationshipType));
 };
 
 export const useGetSnippetById = (id: string) => {

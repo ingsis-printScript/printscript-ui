@@ -7,6 +7,7 @@ import { TestCaseResult } from './queries';
 import { FileType } from '../types/FileType';
 import { Rule } from '../types/Rule';
 import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
+import { RelationshipType } from '../types/Relationship';
 import autoBind from 'auto-bind';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
@@ -55,7 +56,7 @@ export class ApiSnippetOperations implements SnippetOperations {
   async listSnippetDescriptors(
             page: number, pageSize: number, 
             snippetName?: string, language?: string, lintStatus?: string, 
-            sortBy?: string, sortOrder?: string
+            sortBy?: string, sortOrder?: string, relationshipType?: RelationshipType
     ): Promise<PaginatedSnippets> {
     const params: Record<string, string | number> = { page, pageSize };
     if (snippetName) params.name = snippetName;
@@ -67,6 +68,8 @@ export class ApiSnippetOperations implements SnippetOperations {
     if (sortBy) params.sortBy = sortBy;
 
     if (sortOrder) params.sortOrder = sortOrder;
+
+    if (relationshipType) params.relationshipType = relationshipType;
 
     const response = await this.client.get<{
       content: SnippetResponse[];

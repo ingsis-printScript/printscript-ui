@@ -4,12 +4,13 @@ import {TestCase} from "../types/TestCase.ts";
 import {TestCaseResult} from "./queries.tsx";
 import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
+import { RelationshipType } from "../types/Relationship.ts";
 
 export interface SnippetOperations {
   listSnippetDescriptors(
                             page: number, pageSize: number,
                             snippetName?: string, language?: string, lintStatus?: string, 
-                            sortBy?: string, sortOrder?: string
+                            sortBy?: string, sortOrder?: string, relationshipType?: RelationshipType
                         ): Promise<PaginatedSnippets>
 
   createSnippet(createSnippet: CreateSnippet): Promise<Snippet>

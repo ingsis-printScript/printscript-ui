@@ -1,0 +1,1 @@
+export type RelationshipType = 'owner' | 'shared' | 'both';
