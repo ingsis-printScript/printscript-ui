@@ -120,8 +120,8 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   }, [formatSnippetData])
 
 
-  async function handleShareSnippet(userId: string) {
-    shareSnippet({snippetId: id, userId})
+  async function handleShareSnippet(userId: string, permissions: { read: boolean; write: boolean }) {
+    shareSnippet({snippetId: id, userId, permissions})
   }
 
   async function handleEditSnippet(snippetData: CreateSnippet) {

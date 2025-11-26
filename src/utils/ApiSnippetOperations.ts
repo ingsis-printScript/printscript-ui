@@ -9,6 +9,7 @@ import { Rule } from '../types/Rule';
 import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
 import { RelationshipType } from '../types/Relationship';
 import autoBind from 'auto-bind';
+import {PermissionLevel} from "../types/Permission.ts";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
 
@@ -273,10 +274,49 @@ export class ApiSnippetOperations implements SnippetOperations {
       throw new Error('Not implemented yet');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async shareSnippet(_snippetId: string, _userId: string): Promise<Snippet> {
-      throw new Error('Not implemented yet');
+    async shareSnippet(
+        snippetId: string,
+        userId: string,
+        permissions: { read: boolean; write: boolean }
+    ): Promise<void> {
+      const baseBody = { snippetId, targetUserId: userId };
+
+      const calls: Promise<unknown>[] = [];
+
+      if (!permissions.read && !permissions.write) {
+          calls.push(
+              this.client.post('/snippets-sharing/revoke', {
+                  ...baseBody,
+                  permission: 'READ' as PermissionLevel,
+              })
+          );
+      }
+      else if (permissions.write) {
+          calls.push(
+              this.client.post('/snippets-sharing/share', {
+                  ...baseBody,
+                  permission: 'WRITE' as PermissionLevel,
+              })
+          );
+      }
+      else if (permissions.read) {
+          calls.push(
+              this.client.post('/snippets-sharing/share', {
+                  ...baseBody,
+                  permission: 'READ' as PermissionLevel,
+              })
+          );
+          calls.push(
+              this.client.post('/snippets-sharing/revoke', {
+                  ...baseBody,
+                  permission: 'WRITE' as PermissionLevel,
+              })
+          );
+      }
+
+      await Promise.all(calls);
   }
+
 
   async getFileTypes(): Promise<FileType[]> {
       const response =
