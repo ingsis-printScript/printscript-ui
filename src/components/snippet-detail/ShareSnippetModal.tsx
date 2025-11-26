@@ -2,7 +2,7 @@ import {Autocomplete, Box, Button, Divider, TextField, Typography} from "@mui/ma
 import {ModalWrapper} from "../common/ModalWrapper.tsx";
 import {useGetUsers} from "../../utils/queries.tsx";
 import {useEffect, useState} from "react";
-import {User} from "../../utils/users.ts";
+import {User} from "../../types/users.ts";
 
 type ShareSnippetModalProps = {
   open: boolean

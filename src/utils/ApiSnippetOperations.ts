@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { SnippetOperations } from './snippetOperations';
-import { ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from './snippet';
-import { PaginatedUsers } from './users';
+import { ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from '../types/snippet.ts';
+import { PaginatedUsers } from '../types/users.ts';
 import { TestCase } from '../types/TestCase';
 import { TestCaseResult } from './queries';
 import { FileType } from '../types/FileType';

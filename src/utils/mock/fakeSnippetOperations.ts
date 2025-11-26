@@ -1,8 +1,8 @@
 import {SnippetOperations} from '../snippetOperations'
 import {FakeSnippetStore} from './fakeSnippetStore'
-import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../snippet'
+import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../../types/snippet.ts'
 import autoBind from 'auto-bind'
-import {PaginatedUsers} from "../users.ts";
+import {PaginatedUsers} from "../../types/users.ts";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {FileType} from "../../types/FileType.ts";

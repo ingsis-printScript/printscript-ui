@@ -14,7 +14,7 @@ import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
 import {BugReport, Delete, Download, Edit, PlayArrow, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
 import {TestSnippetModal} from "../components/snippet-test/TestSnippetModal.tsx";
-import {CreateSnippet, Snippet} from "../utils/snippet.ts";
+import {CreateSnippet, Snippet} from "../types/snippet.ts";
 import {SnippetExecution, SnippetExecutionHandle} from "./SnippetExecution.tsx";
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";

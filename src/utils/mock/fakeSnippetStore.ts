@@ -1,6 +1,6 @@
-import {ComplianceEnum, CreateSnippet, Snippet, UpdateSnippet} from '../snippet'
+import {ComplianceEnum, CreateSnippet, Snippet, UpdateSnippet} from '../../types/snippet.ts'
 import {v4 as uuid} from 'uuid'
-import {PaginatedUsers} from "../users.ts";
+import {PaginatedUsers} from "../../types/users.ts";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {FileType} from "../../types/FileType.ts";

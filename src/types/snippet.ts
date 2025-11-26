@@ -1,5 +1,5 @@
 import {Pagination} from "./pagination.ts";
-import {FileType} from "../types/FileType.ts";
+import {FileType} from "./FileType.ts";
 
 export type ComplianceEnum =
     'pending' |
