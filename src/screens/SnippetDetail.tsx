@@ -102,8 +102,17 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} = useUpdateSnippetById({onSuccess: () => queryClient.invalidateQueries(['snippet', id])})
   const snippetOperations = useSnippetsOperations();
 
-  const fetchPermissionsForUser = (userId: string): Promise<{ read: boolean; write: boolean }> =>
-      snippetOperations.getUserSnippetPermissions(id, userId);
+    const fetchPermissionsForUser = async (
+        userId: string
+    ): Promise<{ read: boolean; write: boolean }> => {
+        console.log('fetchPermissionsForUser called', { snippetId: id, userId }); // 👈
+
+        const perms = await snippetOperations.getUserSnippetPermissions(id, userId);
+
+        console.log('fetchPermissionsForUser response', perms); // 👈
+
+        return perms;
+    };
 
   const handleRunSnippet = () => {
     if (snippet && executionRef.current) {
