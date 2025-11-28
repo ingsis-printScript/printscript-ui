@@ -121,7 +121,12 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
 
 
   async function handleShareSnippet(userId: string, permissions: { read: boolean; write: boolean }) {
-    shareSnippet({snippetId: id, userId, permissions})
+      try {
+          await shareSnippet({snippetId: id, userId, permissions});
+          setShareModalOpened(false);
+      } catch (e) {
+          console.error(e);
+      }
   }
 
   async function handleEditSnippet(snippetData: CreateSnippet) {
@@ -222,7 +227,8 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             </Box>
           </>
         }
-        <ShareSnippetModal loading={loadingShare || isLoading} open={shareModalOpened}
+        <ShareSnippetModal loading={loadingShare || isLoading}
+                           open={shareModalOpened}
                            onClose={() => setShareModalOpened(false)}
                            onShare={handleShareSnippet}/>
         <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)}/>
