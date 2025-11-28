@@ -7,6 +7,7 @@ import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {FileType} from "../../types/FileType.ts";
 import {Rule} from "../../types/Rule.ts";
+import {UserSnippetPermissions} from "../../types/Permission";
 
 const DELAY: number = 1000
 
@@ -28,6 +29,23 @@ export class FakeSnippetOperations implements SnippetOperations {
       setTimeout(() => resolve(this.fakeStore.getSnippetById(id)), DELAY)
     })
   }
+
+
+    getUserSnippetPermissions(snippetId: string, userId: string): Promise<UserSnippetPermissions> {
+        void snippetId;
+        void userId;
+
+        return new Promise(resolve => {
+            setTimeout(
+                () =>
+                    resolve({
+                        read: false,
+                        write: false,
+                    }),
+                DELAY
+            );
+        });
+    }
 
   listSnippetDescriptors(page: number,pageSize: number): Promise<PaginatedSnippets> {
     const response: PaginatedSnippets = {
