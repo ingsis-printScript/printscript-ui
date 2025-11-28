@@ -293,7 +293,7 @@ export class ApiSnippetOperations implements SnippetOperations {
         userId: string,
         permissions: { read: boolean; write: boolean }
     ): Promise<void> {
-      const baseBody = { snippetId, targetUserId: userId };
+      const baseBody = { snippetId, userId };
 
       const calls: Promise<unknown>[] = [];
 
