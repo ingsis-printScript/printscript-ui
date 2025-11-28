@@ -274,7 +274,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       const params: Record<string, string | number> = { page, pageSize };
       if (name) params.search = name;
 
-      const response = await this.client.get<BackendPaginatedUsers>('/users', { params });
+      const response = await this.client.get<BackendPaginatedUsers>('/snippets-sharing', { params });
       const data = response.data;
 
       return {
