@@ -25,10 +25,8 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
   const options = (data?.users ?? []).filter(
       (u) => u.id !== currentUserId
   );
-    console.log("debouncedName", debouncedName);
-    console.log("data", data);
-    console.log("options", options);
 
+    console.log('ShareSnippetModal getPermissionsForUser is defined?', !!getPermissionsForUser); // 👈
 
     useEffect(() => {
     const getData = setTimeout(() => {
@@ -38,12 +36,12 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
   }, [name])
 
     async function handleSelectUser(newValue: User | null) {
+        console.log('handleSelectUser called with', newValue);
         setSelectedUser(newValue ?? undefined);
 
         if (newValue && getPermissionsForUser) {
             try {
                 const perms = await getPermissionsForUser(newValue.id);
-                console.log('perms fetched', newValue.id, perms);
                 setCanRead(perms.read);
                 setCanWrite(perms.write);
             } catch (e) {
@@ -97,7 +95,10 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
               loading={isLoading}
               value={selectedUser}
               onInputChange={(_: unknown, newValue: string | null) => setName(newValue ?? "")}
-              onChange={(_: unknown, newValue: User | null) => handleSelectUser(newValue)}
+              onChange={(_: unknown, newValue: User | null) => {
+                  console.log('Autocomplete onChange newValue', newValue); // 👈
+                  handleSelectUser(newValue);
+              }}
           />
 
             <Box mt={2} display="flex" flexDirection="row" gap={2}>
