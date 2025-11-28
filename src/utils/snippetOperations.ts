@@ -5,6 +5,7 @@ import {TestCaseResult} from "./queries.tsx";
 import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
 import { RelationshipType } from "../types/Relationship.ts";
+import {UserSnippetPermissions} from "../types/Permission.ts";
 
 export interface SnippetOperations {
   listSnippetDescriptors(
@@ -20,6 +21,8 @@ export interface SnippetOperations {
   updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet>
 
   getUserFriends(name?: string,page?: number,pageSize?: number): Promise<PaginatedUsers>
+
+  getUserSnippetPermissions(snippetId: string, userId: string): Promise<UserSnippetPermissions>;
 
   shareSnippet(snippetId: string, userId: string, permissions: { read: boolean; write: boolean }): Promise<void>
 

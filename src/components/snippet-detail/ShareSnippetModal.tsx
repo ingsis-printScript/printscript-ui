@@ -10,9 +10,10 @@ type ShareSnippetModalProps = {
   onClose: () => void
   onShare: (userId: string, permissions: { read: boolean; write: boolean }) => void
   loading: boolean
+  getPermissionsForUser?: (userId: string) => Promise<{ read: boolean; write: boolean }>;
 }
 export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
-  const {open, onClose, onShare, loading} = props
+  const {open, onClose, onShare, loading, getPermissionsForUser} = props
   const [name, setName] = useState("")
   const [debouncedName, setDebouncedName] = useState("")
   const {data, isLoading} = useGetUsers(debouncedName, 0, 5)
@@ -33,9 +34,24 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
     return () => clearTimeout(getData)
   }, [name])
 
-  function handleSelectUser(newValue: User | null) {
-    newValue && setSelectedUser(newValue)
-  }
+    async function handleSelectUser(newValue: User | null) {
+        setSelectedUser(newValue ?? undefined);
+
+        if (newValue && getPermissionsForUser) {
+            try {
+                const perms = await getPermissionsForUser(newValue.id);
+                setCanRead(perms.read);
+                setCanWrite(perms.write);
+            } catch (e) {
+                console.error('Error fetching permissions', e);
+                setCanRead(true);
+                setCanWrite(false);
+            }
+        } else {
+            setCanRead(true);
+            setCanWrite(false);
+        }
+    }
 
   function toggleRead(checked: boolean) {
       setCanRead(checked);
@@ -65,7 +81,7 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
               }
               getOptionLabel={(option) => option.name}
               loading={isLoading}
-              value={selectedUser}
+              value={selectedUser ?? null}
               onInputChange={(_: unknown, newValue: string | null) => newValue && setName(newValue)}
               onChange={(_: unknown, newValue: User | null) => handleSelectUser(newValue)}
           />

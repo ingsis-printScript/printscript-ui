@@ -9,7 +9,7 @@ import { Rule } from '../types/Rule';
 import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
 import { RelationshipType } from '../types/Relationship';
 import autoBind from 'auto-bind';
-import {PermissionLevel} from "../types/Permission.ts";
+import {PermissionLevel, UserSnippetPermissions} from "../types/Permission.ts";
 import {BackendPaginatedUsers} from "../types/users.ts";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
@@ -140,6 +140,22 @@ export class ApiSnippetOperations implements SnippetOperations {
       lintErrors: data.lintErrors ?? undefined,
     };
   }
+
+    async getUserSnippetPermissions(
+        snippetId: string,
+        userId: string
+    ): Promise<UserSnippetPermissions> {
+        const response = await this.client.get<{ canRead: boolean; canWrite: boolean }>(
+            '/snippets-sharing/permissions',
+            { params: { snippetId, userId } }
+        );
+
+        const data = response.data;
+        return {
+            read: data.canRead,
+            write: data.canWrite,
+        };
+    }
 
   async getSnippetById(id: string): Promise<Snippet | undefined> {
     try {

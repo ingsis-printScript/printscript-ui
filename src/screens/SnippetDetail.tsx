@@ -20,6 +20,7 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";
 import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 import {AddSnippetModal} from "../components/snippet-table/AddSnippetModal.tsx";
+import { useSnippetsOperations } from "../utils/queries.tsx";
 
 type SnippetDetailProps = {
   id: string;
@@ -96,9 +97,13 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   const executionRef = useRef<SnippetExecutionHandle>(null);
 
   const {data: snippet, isLoading} = useGetSnippetById(id);
-  const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet()
+  const {mutateAsync: shareSnippet, isLoading: loadingShare} = useShareSnippet()
   const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} = useFormatSnippet()
   const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} = useUpdateSnippetById({onSuccess: () => queryClient.invalidateQueries(['snippet', id])})
+  const snippetOperations = useSnippetsOperations();
+
+  const fetchPermissionsForUser = (userId: string): Promise<{ read: boolean; write: boolean }> =>
+      snippetOperations.getUserSnippetPermissions(id, userId);
 
   const handleRunSnippet = () => {
     if (snippet && executionRef.current) {
@@ -230,7 +235,8 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
         <ShareSnippetModal loading={loadingShare || isLoading}
                            open={shareModalOpened}
                            onClose={() => setShareModalOpened(false)}
-                           onShare={handleShareSnippet}/>
+                           onShare={handleShareSnippet}
+                           getPermissionsForUser={fetchPermissionsForUser}/>
         <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)}/>
         <DeleteConfirmationModal open={deleteConfirmationModalOpen} onClose={() => setDeleteConfirmationModalOpen(false)} id={snippet?.id ?? ""} setCloseDetails={handleCloseModal} />
         <AddSnippetModal
