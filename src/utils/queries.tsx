@@ -9,7 +9,6 @@ import {Rule} from "../types/Rule.ts";
 import {useAuth0} from "@auth0/auth0-react";
 import {useEffect} from "react";
 import { RelationshipType } from "../types/Relationship.ts";
-import { UserSnippetPermissions } from "../types/Permission";
 
 
 export const useSnippetsOperations = () => {
@@ -176,18 +175,6 @@ export const useDeleteSnippet = ({onSuccess}: {onSuccess: () => void}) => {
       }
   );
 }
-
-export const useGetUserSnippetPermissions = (snippetId: string, userId?: string) => {
-    const snippetOperations = useSnippetsOperations();
-
-    return useQuery<UserSnippetPermissions, Error>(
-        ['snippetPermissions', snippetId, userId],
-        () => snippetOperations.getUserSnippetPermissions(snippetId, userId!),
-        {
-            enabled: !!userId,
-        }
-    );
-};
 
 export const useGetFileTypes = () => {
   const snippetOperations = useSnippetsOperations()

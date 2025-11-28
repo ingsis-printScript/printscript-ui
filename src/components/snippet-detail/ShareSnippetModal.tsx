@@ -25,6 +25,9 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
   const options = (data?.users ?? []).filter(
       (u) => u.id !== currentUserId
   );
+    console.log("debouncedName", debouncedName);
+    console.log("data", data);
+    console.log("options", options);
 
 
     useEffect(() => {
@@ -67,6 +70,16 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
       }
     }
 
+  useEffect(() => {
+      if (!open) {
+          setSelectedUser(undefined);
+          setName("");
+          setDebouncedName("");
+          setCanRead(true);
+          setCanWrite(false);
+      }
+  }, [open]);
+
 
     return (
       <ModalWrapper open={open} onClose={onClose}>
@@ -81,7 +94,7 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
               }
               getOptionLabel={(option) => option.name}
               loading={isLoading}
-              value={selectedUser ?? null}
+              value={selectedUser}
               onInputChange={(_: unknown, newValue: string | null) => newValue && setName(newValue)}
               onChange={(_: unknown, newValue: User | null) => handleSelectUser(newValue)}
           />
