@@ -43,6 +43,7 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
         if (newValue && getPermissionsForUser) {
             try {
                 const perms = await getPermissionsForUser(newValue.id);
+                console.log('perms fetched', newValue.id, perms);
                 setCanRead(perms.read);
                 setCanWrite(perms.write);
             } catch (e) {
@@ -95,7 +96,7 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
               getOptionLabel={(option) => option.name}
               loading={isLoading}
               value={selectedUser}
-              onInputChange={(_: unknown, newValue: string | null) => newValue && setName(newValue)}
+              onInputChange={(_: unknown, newValue: string | null) => setName(newValue ?? "")}
               onChange={(_: unknown, newValue: User | null) => handleSelectUser(newValue)}
           />
 
