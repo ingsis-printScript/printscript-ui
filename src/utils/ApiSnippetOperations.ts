@@ -10,6 +10,7 @@ import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
 import { RelationshipType } from '../types/Relationship';
 import autoBind from 'auto-bind';
 import {PermissionLevel} from "../types/Permission.ts";
+import {BackendPaginatedUsers} from "../types/users.ts";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
 
@@ -269,9 +270,22 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
-      throw new Error('Not implemented yet');
+  async getUserFriends(name: string = "", page: number = 0, pageSize: number = 10): Promise<PaginatedUsers> {
+      const params: Record<string, string | number> = { page, pageSize };
+      if (name) params.search = name;
+
+      const response = await this.client.get<BackendPaginatedUsers>('/users', { params });
+      const data = response.data;
+
+      return {
+          page: data.page,
+          page_size: data.pageSize,
+          count: data.totalElements,
+          users: data.users.map((u) => ({
+              id: u.id,
+              name: u.displayName || u.email.split('@')[0],
+          })),
+      };
   }
 
     async shareSnippet(
