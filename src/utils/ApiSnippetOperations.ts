@@ -92,7 +92,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: s.extension,
       version: s.version,
       compliance: mapLintStatusToCompliance(s.lintStatus),
-      author: s.userId,
+      author: s.authorName,
       lintErrors: s.lintErrors ?? undefined,
     }));
 
@@ -136,7 +136,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: data.extension,
       version: data.version,
       compliance: mapLintStatusToCompliance(data.lintStatus),
-      author: data.userId,
+      author: data.authorName,
       lintErrors: data.lintErrors ?? undefined,
     };
   }
@@ -156,7 +156,7 @@ export class ApiSnippetOperations implements SnippetOperations {
         extension: data.extension,
         version: data.version,
         compliance: mapLintStatusToCompliance(data.lintStatus),
-        author: data.userId,
+        author: data.authorName,
         lintErrors: data.lintErrors ?? undefined,
       };
     } catch (error) {
@@ -213,7 +213,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: data.extension,
       version: data.version,
       compliance: mapLintStatusToCompliance(data.lintStatus),
-      author: data.userId,
+      author: data.authorName,
       lintErrors: data.lintErrors ?? undefined,
     };
   }
