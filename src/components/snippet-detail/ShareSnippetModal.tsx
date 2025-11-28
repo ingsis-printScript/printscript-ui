@@ -3,6 +3,7 @@ import {ModalWrapper} from "../common/ModalWrapper.tsx";
 import {useGetUsers} from "../../utils/queries.tsx";
 import {useEffect, useState} from "react";
 import {User} from "../../types/users.ts";
+import { useAuth0 } from "@auth0/auth0-react";
 
 type ShareSnippetModalProps = {
   open: boolean
@@ -18,6 +19,11 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
   const [selectedUser, setSelectedUser] = useState<User | undefined>()
   const [canRead, setCanRead] = useState<boolean>(true)
   const [canWrite, setCanWrite] = useState<boolean>(false)
+  const { user } = useAuth0();
+  const currentUserId = user?.sub;
+  const options = (data?.users ?? []).filter(
+      (u) => u.id !== currentUserId
+  );
 
 
     useEffect(() => {
@@ -53,7 +59,7 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
         <Box mt={2}>
           <Autocomplete
               renderInput={(params) => <TextField {...params} label="Type the user's name"/>}
-              options={data?.users ?? []}
+              options={options}
               isOptionEqualToValue={(option, value) =>
                   option.id === value.id
               }
