@@ -30,6 +30,7 @@ const AppInner = () => {
     useEffect(() => {
         const syncUser = async () => {
             if (!isAuthenticated || !user?.sub || !user.email) return;
+            console.log("Syncing user", { sub: user?.sub, email: user?.email });
 
             const key = `user-synced-${user.sub}`;
             if (localStorage.getItem(key) === "true") return;
