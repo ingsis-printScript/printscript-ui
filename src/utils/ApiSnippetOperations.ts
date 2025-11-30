@@ -64,9 +64,9 @@ export class ApiSnippetOperations implements SnippetOperations {
     const snippets = data.content.map((s) => ({
       id: s.id,
       name: s.name,
-      content: '', // Content not included in list endpoint
+      content: '',
       language: s.language,
-      extension: 'ps', // Default PrintScript extension
+      extension: 'ps',
       compliance: 'pending' as const, // TODO: Get actual compliance status
       author: s.userId,
     }));
@@ -81,47 +81,52 @@ export class ApiSnippetOperations implements SnippetOperations {
 
   // TODO: al hacer lo de abajo, sacar el eslint-disable y los underscores (son por issues de unused vars)
 
-  async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
-    const formData = new FormData();
+    async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+        const formData = new FormData();
 
-    const snippetData = {
-      name: createSnippet.name,
-      description: '', // UI doesn't have description field yet
-      language: createSnippet.language,
-      version: '1.1' // Default version -> modify (pili me dijo que no se esta manejando en ui really, ver como hacer)
-    };
-    formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
+        const snippetData = {
+            name: createSnippet.name,
+            description: '',
+            language: createSnippet.language,
+            version: '1.1'
+        };
 
-    formData.append('content', createSnippet.content);
+        formData.append(
+            'data',
+            new Blob([JSON.stringify(snippetData)], { type: 'application/json' })
+        );
 
-    const response = await this.client.post<{
-      id: string;
-      userId: string;
-      name: string;
-      description: string;
-      language: string;
-      version: string;
-      contentReference: string;
-    }>('/snippets-management/editor', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+        formData.append(
+            'content',
+            new Blob([createSnippet.content], { type: 'text/plain' }),
+            'snippet.ps'
+        );
 
-    const data = response.data;
+        const response = await this.client.post<{
+            id: string;
+            userId: string;
+            name: string;
+            description: string;
+            language: string;
+            version: string;
+            contentReference: string;
+        }>('/snippets-management/editor', formData);
 
-    return {
-      id: data.id,
-      name: data.name,
-      content: createSnippet.content,
-      language: data.language,
-      extension: 'ps',
-      compliance: 'pending' as const,
-      author: data.userId,
-    };
-  }
+        const data = response.data;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return {
+            id: data.id,
+            name: data.name,
+            content: createSnippet.content,
+            language: data.language,
+            extension: 'ps',
+            compliance: 'pending' as const,
+            author: data.userId,
+        };
+    }
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getSnippetById(id: string): Promise<Snippet & { tests: TestCase[] }> {
         const response = await this.client.get(`/snippets-management/${id}`);
         const data = response.data;
@@ -148,21 +153,22 @@ export class ApiSnippetOperations implements SnippetOperations {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
         const formData = new FormData();
-        formData.append('content', updateSnippet.content);
+        formData.append(
+            'content',
+            new Blob([updateSnippet.content], { type: 'text/plain' }),
+            'snippet.ps'
+        );
 
-        const response = await this.client.patch(`/snippets-management/${id}/content`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        const res = await this.client.patch(`/snippets-management/${id}/content`, formData);
 
-        const data = response.data;
         return {
-            id: data.id,
-            name: data.name,
+            id: res.data.id,
+            name: res.data.name,
             content: updateSnippet.content,
-            language: data.language,
+            language: res.data.language,
             extension: 'ps',
             compliance: 'pending',
-            author: data.userId,
+            author: res.data.userId,
         };
     }
 
@@ -258,9 +264,6 @@ export class ApiSnippetOperations implements SnippetOperations {
             output: data.expectedOutputs
         };
     }
-
-
-
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async removeTestCase(id: string): Promise<string> {
