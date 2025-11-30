@@ -88,14 +88,22 @@ export class ApiSnippetOperations implements SnippetOperations {
             name: createSnippet.name,
             description: '',
             language: createSnippet.language,
-            version: '1.1',
+            version: '1.1'
         };
         formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
 
         formData.append('content', createSnippet.content);
 
-        const response = await this.client.post('/snippets-management/editor', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+        const response = await this.client.post<{
+            id: string;
+            userId: string;
+            name: string;
+            description: string;
+            language: string;
+            version: string;
+            contentReference: string;
+        }>('/snippets-management/editor', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
 
         const data = response.data;
@@ -106,12 +114,10 @@ export class ApiSnippetOperations implements SnippetOperations {
             content: createSnippet.content,
             language: data.language,
             extension: 'ps',
-            compliance: 'pending',
+            compliance: 'pending' as const,
             author: data.userId,
         };
     }
-
-
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getSnippetById(id: string): Promise<Snippet & { tests: TestCase[] }> {
@@ -143,8 +149,13 @@ export class ApiSnippetOperations implements SnippetOperations {
 
         formData.append('content', updateSnippet.content);
 
-        const response = await this.client.patch(`/snippets-management/${id}/content`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+        const response = await this.client.patch<{
+            id: string;
+            name: string;
+            language: string;
+            userId: string;
+        }>(`/snippets-management/${id}/content`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
 
         const data = response.data;
@@ -159,6 +170,7 @@ export class ApiSnippetOperations implements SnippetOperations {
             author: data.userId,
         };
     }
+
 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
