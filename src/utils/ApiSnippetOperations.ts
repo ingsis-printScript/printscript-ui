@@ -90,17 +90,9 @@ export class ApiSnippetOperations implements SnippetOperations {
             language: createSnippet.language,
             version: '1.1'
         };
+        formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
 
-        formData.append(
-            'data',
-            new Blob([JSON.stringify(snippetData)], { type: 'application/json' })
-        );
-
-        formData.append(
-            'content',
-            new Blob([createSnippet.content], { type: 'text/plain' }),
-            'snippet.ps'
-        );
+        formData.append('content', createSnippet.content);
 
         const response = await this.client.post<{
             id: string;
@@ -124,6 +116,7 @@ export class ApiSnippetOperations implements SnippetOperations {
             author: data.userId,
         };
     }
+
 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
