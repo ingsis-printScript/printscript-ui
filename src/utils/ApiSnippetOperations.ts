@@ -122,16 +122,53 @@ export class ApiSnippetOperations implements SnippetOperations {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getSnippetById(_id: string): Promise<Snippet | undefined> {
-    throw new Error('Not implemented yet');
-  }
+    async getSnippetById(id: string): Promise<Snippet & { tests: TestCase[] }> {
+        const response = await this.client.get(`/snippets-management/${id}`);
+        const data = response.data;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateSnippetById(_id: string, _updateSnippet: UpdateSnippet): Promise<Snippet> {
-    throw new Error('Not implemented yet');
-  }
+        return {
+            id: data.snippet.id,
+            name: data.snippet.name,
+            content: data.snippet.content,
+            language: data.snippet.language,
+            extension: data.snippet.extension,
+            compliance: data.snippet.lintStatus,
+            author: data.snippet.userId,
+            tests: data.tests.map((t: any) => ({
+                id: t.id,
+                snippetId: t.snippetId,
+                name: t.name,
+                inputs: t.inputs,
+                expectedOutputs: t.expectedOutputs,
+                valid: t.valid,
+            })),
+        };
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
+        const formData = new FormData();
+        formData.append('content', updateSnippet.content);
+
+        const response = await this.client.patch(`/snippets-management/${id}/content`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const data = response.data;
+        return {
+            id: data.id,
+            name: data.name,
+            content: updateSnippet.content,
+            language: data.language,
+            extension: 'ps',
+            compliance: 'pending',
+            author: data.userId,
+        };
+    }
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
     throw new Error('Not implemented yet');
   }
@@ -149,40 +186,152 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-  async getTestCases(): Promise<TestCase[]> {
-    throw new Error('Not implemented yet');
-  }
+    async getTestCases(): Promise<TestCase[]> {
+        try {
+            const allSnippets = await this.listSnippetDescriptors(0, 1000);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const testCasesArrays = await Promise.all(
+                allSnippets.snippets.map(async (snippet) => {
+                    const response = await this.client.get<{
+                        id: string;
+                        snippetId: string;
+                        name: string;
+                        inputs: string[];
+                        expectedOutputs: string[];
+                        valid: boolean;
+                    }[]>(`/snippets-management/${snippet.id}`);
+
+                    return response.data.map(t => ({
+                        id: t.id,
+                        snippetId: t.snippetId,
+                        name: t.name,
+                        inputs: t.inputs,
+                        expectedOutputs: t.expectedOutputs,
+                        valid: t.valid,
+                    })) as TestCase[];
+                })
+            );
+            return testCasesArrays.flat();
+        } catch (err) {
+            console.error('Error fetching test cases:', err);
+            return [];
+        }
+    }
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async formatSnippet(_snippet: string): Promise<string> {
     throw new Error('Not implemented yet');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async postTestCase(_testCase: Partial<TestCase>): Promise<TestCase> {
-    throw new Error('Not implemented yet');
-  }
+    async postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
+        const all = await this.listSnippetDescriptors(0, 9999);
+
+        let snippetId: string | undefined;
+
+        for (const s of all.snippets) {
+            const full = await this.getSnippetById(s.id);
+            if (full.id === testCase.id) {
+                snippetId = s.id;
+                break;
+            }
+        }
+
+        if (!snippetId) {
+            throw new Error("Cannot determine snippetId for this test case");
+        }
+
+        const response = await this.client.post(
+            `/snippets-test/${snippetId}/tests`,
+            {
+                name: testCase.name,
+                inputs: testCase.input ?? [],
+                expectedOutputs: testCase.output ?? []
+            }
+        );
+
+        const data = response.data;
+
+        return {
+            id: data.id,
+            name: data.name,
+            input: data.inputs,
+            output: data.expectedOutputs
+        };
+    }
+
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async removeTestCase(id: string): Promise<string> {
+        const all = await this.listSnippetDescriptors(0, 9999);
+
+        let snippetId: string | undefined;
+
+        for (const s of all.snippets) {
+            const full = await this.getSnippetById(s.id);
+
+            if (full.tests.some(t => t.id === id)) {
+                snippetId = s.id;
+                break;
+            }
+        }
+
+        if (!snippetId) {
+            throw new Error(`Test case ${id} not found in any snippet`);
+        }
+
+        await this.client.delete(`/snippets-test/${snippetId}/tests/${id}`);
+
+        return id;
+    }
+
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async deleteSnippet(id: string): Promise<string> {
+        await this.client.delete(`/snippets-management/${id}`);
+        return id;
+    }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async removeTestCase(_id: string): Promise<string> {
-    throw new Error('Not implemented yet');
-  }
+    async testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
+        const all = await this.listSnippetDescriptors(0, 9999);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async deleteSnippet(_id: string): Promise<string> {
-    throw new Error('Not implemented yet');
-  }
+        let snippetId: string | undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async testSnippet(_testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    throw new Error('Not implemented yet');
-  }
+        for (const s of all.snippets) {
+            const full = await this.getSnippetById(s.id);
+            if (full.tests.some(t => t.id === testCase.id)) {
+                snippetId = s.id;
+                break;
+            }
+        }
 
-  async getFileTypes(): Promise<FileType[]> {
-    throw new Error('Not implemented yet');
-  }
+        if (!snippetId) {
+            throw new Error(`Cannot find snippet for test ${testCase.id}`);
+        }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const response = await this.client.post(
+            `/snippets-test/${snippetId}/tests/${testCase.id}/run`
+        );
+
+        const data = response.data;
+
+        return data.valid ? "success" : "fail";
+    }
+
+
+
+
+    async getFileTypes(): Promise<FileType[]> {
+        const response = await this.client.get<FileType[]>('/snippets-management/config/filetypes');
+        return response.data;
+    }
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async modifyFormatRule(_newRules: Rule[]): Promise<Rule[]> {
     throw new Error('Not implemented yet');
   }
@@ -191,4 +340,7 @@ export class ApiSnippetOperations implements SnippetOperations {
   async modifyLintingRule(_newRules: Rule[]): Promise<Rule[]> {
     throw new Error('Not implemented yet');
   }
+
+
+
 }
