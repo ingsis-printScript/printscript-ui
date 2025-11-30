@@ -88,21 +88,15 @@ export class ApiSnippetOperations implements SnippetOperations {
             name: createSnippet.name,
             description: '',
             language: createSnippet.language,
-            version: '1.1'
+            version: '1.1',
         };
         formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
 
         formData.append('content', createSnippet.content);
 
-        const response = await this.client.post<{
-            id: string;
-            userId: string;
-            name: string;
-            description: string;
-            language: string;
-            version: string;
-            contentReference: string;
-        }>('/snippets-management/editor', formData);
+        const response = await this.client.post('/snippets-management/editor', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
         const data = response.data;
 
@@ -112,7 +106,7 @@ export class ApiSnippetOperations implements SnippetOperations {
             content: createSnippet.content,
             language: data.language,
             extension: 'ps',
-            compliance: 'pending' as const,
+            compliance: 'pending',
             author: data.userId,
         };
     }
@@ -146,22 +140,23 @@ export class ApiSnippetOperations implements SnippetOperations {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
         const formData = new FormData();
-        formData.append(
-            'content',
-            new Blob([updateSnippet.content], { type: 'text/plain' }),
-            'snippet.ps'
-        );
 
-        const res = await this.client.patch(`/snippets-management/${id}/content`, formData);
+        formData.append('content', updateSnippet.content);
+
+        const response = await this.client.patch(`/snippets-management/${id}/content`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const data = response.data;
 
         return {
-            id: res.data.id,
-            name: res.data.name,
+            id: data.id,
+            name: data.name,
             content: updateSnippet.content,
-            language: res.data.language,
+            language: data.language,
             extension: 'ps',
             compliance: 'pending',
-            author: res.data.userId,
+            author: data.userId,
         };
     }
 
