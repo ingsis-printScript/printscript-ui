@@ -136,14 +136,13 @@ export class ApiSnippetOperations implements SnippetOperations {
             author: data.snippet.userId,
             tests: data.tests.map((t: any) => ({
                 id: t.id,
-                snippetId: t.snippetId,
                 name: t.name,
-                inputs: t.inputs,
-                expectedOutputs: t.expectedOutputs,
-                valid: t.valid,
-            })),
+                input: t.inputs ?? [],
+                output: t.expectedOutputs ?? []
+            }))
         };
     }
+
 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -186,37 +185,32 @@ export class ApiSnippetOperations implements SnippetOperations {
     throw new Error('Not implemented yet');
   }
 
-    async getTestCases(): Promise<TestCase[]> {
+  async getTestCases(): Promise<TestCase[]> {
         try {
             const allSnippets = await this.listSnippetDescriptors(0, 1000);
 
             const testCasesArrays = await Promise.all(
                 allSnippets.snippets.map(async (snippet) => {
-                    const response = await this.client.get<{
-                        id: string;
-                        snippetId: string;
-                        name: string;
-                        inputs: string[];
-                        expectedOutputs: string[];
-                        valid: boolean;
-                    }[]>(`/snippets-management/${snippet.id}`);
+                    const response = await this.client.get(`/snippets-management/${snippet.id}`);
+                    const tests = response.data.tests ?? [];
 
-                    return response.data.map(t => ({
+                    return tests.map((t: any) => ({
                         id: t.id,
-                        snippetId: t.snippetId,
                         name: t.name,
-                        inputs: t.inputs,
-                        expectedOutputs: t.expectedOutputs,
-                        valid: t.valid,
+                        input: t.inputs ?? [],
+                        output: t.expectedOutputs ?? []
                     })) as TestCase[];
                 })
             );
+
             return testCasesArrays.flat();
         } catch (err) {
             console.error('Error fetching test cases:', err);
             return [];
         }
     }
+
+
 
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -232,7 +226,11 @@ export class ApiSnippetOperations implements SnippetOperations {
 
         for (const s of all.snippets) {
             const full = await this.getSnippetById(s.id);
+
             if (full.id === testCase.id) {
+            }
+
+            if (full.tests.some(t => t.id === testCase.id)) {
                 snippetId = s.id;
                 break;
             }
@@ -260,6 +258,7 @@ export class ApiSnippetOperations implements SnippetOperations {
             output: data.expectedOutputs
         };
     }
+
 
 
 
