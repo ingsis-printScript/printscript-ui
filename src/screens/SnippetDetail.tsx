@@ -246,7 +246,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                            onClose={() => setShareModalOpened(false)}
                            onShare={handleShareSnippet}
                            getPermissionsForUser={fetchPermissionsForUser}/>
-        <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)}/>
+        <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)} snippetId={id}/>
         <DeleteConfirmationModal open={deleteConfirmationModalOpen} onClose={() => setDeleteConfirmationModalOpen(false)} id={snippet?.id ?? ""} setCloseDetails={handleCloseModal} />
         <AddSnippetModal
           open={editModalOpened}

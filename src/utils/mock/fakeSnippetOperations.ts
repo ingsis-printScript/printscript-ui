@@ -94,31 +94,37 @@ export class FakeSnippetOperations implements SnippetOperations {
     })
   }
 
-  formatSnippet(snippetContent: string): Promise<string> {
+  formatSnippet(snippetId: string, code: string): Promise<string> {
+    void snippetId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.formatSnippet(snippetContent)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.formatSnippet(code)), DELAY)
     })
   }
 
-  getTestCases(): Promise<TestCase[]> {
+  getTestCases(snippetId: string): Promise<TestCase[]> {
+    void snippetId
     return new Promise(resolve => {
       setTimeout(() => resolve(this.fakeStore.getTestCases()), DELAY)
     })
   }
 
-  postTestCase(testCase: TestCase): Promise<TestCase> {
+  postTestCase(snippetId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    void snippetId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.postTestCase(testCase)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.postTestCase(testCase as TestCase)), DELAY)
     })
   }
 
-  removeTestCase(id: string): Promise<string> {
+  removeTestCase(snippetId: string, testId: string): Promise<string> {
+    void snippetId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.removeTestCase(id)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.removeTestCase(testId)), DELAY)
     })
   }
 
-  testSnippet(): Promise<TestCaseResult> {
+  testSnippet(snippetId: string, testId: string): Promise<TestCaseResult> {
+    void snippetId
+    void testId
     return new Promise(resolve => {
       setTimeout(() => resolve(this.fakeStore.testSnippet()), DELAY)
     })

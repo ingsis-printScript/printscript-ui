@@ -267,23 +267,62 @@ export class ApiSnippetOperations implements SnippetOperations {
       return response.data.code;
   }
 
-  async getTestCases(): Promise<TestCase[]> {
-    throw new Error('Not implemented yet');
+  async getTestCases(snippetId: string): Promise<TestCase[]> {
+    const response = await this.client.get<Array<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      valid: boolean;
+    }>>(`/snippets-test/${snippetId}/tests`);
+
+    return response.data.map(test => ({
+      id: test.id,
+      name: test.name,
+      input: test.inputs,
+      output: test.expectedOutputs,
+    }));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async postTestCase(_testCase: Partial<TestCase>): Promise<TestCase> {
-    throw new Error('Not implemented yet');
+  async postTestCase(snippetId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    const response = await this.client.post<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      valid: boolean;
+    }>(`/snippets-test/${snippetId}/tests`, {
+      name: testCase.name,
+      inputs: testCase.input || [],
+      expectedOutputs: testCase.output || [],
+    });
+
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      input: response.data.inputs,
+      output: response.data.expectedOutputs,
+    };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async removeTestCase(_id: string): Promise<string> {
-    throw new Error('Not implemented yet');
+  async removeTestCase(snippetId: string, testId: string): Promise<string> {
+    await this.client.delete(`/snippets-test/${snippetId}/tests/${testId}`);
+    return testId;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async testSnippet(_testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    throw new Error('Not implemented yet');
+  async testSnippet(snippetId: string, testId: string): Promise<TestCaseResult> {
+    const response = await this.client.post<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      valid: boolean;
+    }>(`/snippets-test/${snippetId}/tests/${testId}/run`);
+
+    return response.data.valid ? 'success' : 'fail';
   }
 
   async getUserFriends(name: string = "", page: number = 0, pageSize: number = 10): Promise<PaginatedUsers> {
