@@ -2,6 +2,7 @@ import {useState} from "react";
 import {TestCase} from "../../types/TestCase.ts";
 import {Autocomplete, Box, Button, Chip, TextField, Typography} from "@mui/material";
 import {BugReport, Delete, Save} from "@mui/icons-material";
+import {queryClient} from "../../App.tsx";
 import {useTestSnippet} from "../../utils/queries.tsx";
 
 type TabPanelProps = {
@@ -16,7 +17,19 @@ type TabPanelProps = {
 export const TabPanel = ({value, index, test: initialTest, snippetId, setTestCase, removeTestCase}: TabPanelProps) => {
     const [testData, setTestData] = useState<Partial<TestCase> | undefined>(initialTest);
 
-    const {mutateAsync: testSnippet, data} = useTestSnippet();
+    const {mutateAsync: testSnippet, data} = useTestSnippet({
+        onSuccess: () => {
+            if (testData?.id) {
+                queryClient.invalidateQueries(['testCases', snippetId])
+            }
+        }
+    });
+    const currentStatus = testData?.status;
+    const statusChip = currentStatus === "PASS"
+        ? <Chip label="Pass" color="success"/>
+        : currentStatus === "FAIL"
+            ? <Chip label="Fail" color="error"/>
+            : <Chip label="Pending" color="warning"/>;
 
 
     return (
@@ -97,8 +110,9 @@ export const TabPanel = ({value, index, test: initialTest, snippetId, setTestCas
                             disableElevation>
                             Test
                         </Button>
-                        {data && (data === "success" ? <Chip label="Pass" color="success"/> :
-                            <Chip label="Fail" color="error"/>)}
+                        {data
+                            ? (data === "success" ? <Chip label="Pass" color="success"/> : <Chip label="Fail" color="error"/>)
+                            : statusChip}
                     </Box>
                 </Box>
             )}

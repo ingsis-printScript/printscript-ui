@@ -274,7 +274,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: string;
       inputs: string[];
       expectedOutputs: string[];
-      valid: boolean;
+      status: 'PENDING' | 'PASS' | 'FAIL';
     }>>(`/snippets-test/${snippetId}/tests`);
 
     return response.data.map(test => ({
@@ -282,6 +282,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: test.name,
       input: test.inputs,
       output: test.expectedOutputs,
+      status: test.status,
     }));
   }
 
@@ -292,7 +293,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: string;
       inputs: string[];
       expectedOutputs: string[];
-      valid: boolean;
+      status: 'PENDING' | 'PASS' | 'FAIL';
     }>(`/snippets-test/${snippetId}/tests`, {
       name: testCase.name,
       inputs: testCase.input || [],
@@ -304,6 +305,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: response.data.name,
       input: response.data.inputs,
       output: response.data.expectedOutputs,
+      status: response.data.status,
     };
   }
 
@@ -314,7 +316,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: string;
       inputs: string[];
       expectedOutputs: string[];
-      valid: boolean;
+      status: 'PENDING' | 'PASS' | 'FAIL';
     }>(`/snippets-test/${snippetId}/tests/${testId}`, {
       name: testCase.name,
       inputs: testCase.input || [],
@@ -326,6 +328,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: response.data.name,
       input: response.data.inputs,
       output: response.data.expectedOutputs,
+      status: response.data.status,
     };
   }
 
@@ -341,10 +344,10 @@ export class ApiSnippetOperations implements SnippetOperations {
       name: string;
       inputs: string[];
       expectedOutputs: string[];
-      valid: boolean;
+      status: 'PENDING' | 'PASS' | 'FAIL';
     }>(`/snippets-test/${snippetId}/tests/${testId}/run`);
 
-    return response.data.valid ? 'success' : 'fail';
+    return response.data.status === 'PASS' ? 'success' : 'fail';
   }
 
   async getUserFriends(name: string = "", page: number = 0, pageSize: number = 10): Promise<PaginatedUsers> {

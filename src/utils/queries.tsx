@@ -127,11 +127,16 @@ export const useRemoveTestCase = ({onSuccess}: {onSuccess: () => void}) => {
 
 export type TestCaseResult = "success" | "fail"
 
-export const useTestSnippet = () => {
+export const useTestSnippet = ({onSuccess}: {onSuccess?: (variables: { snippetId: string; testId: string }) => void} = {}) => {
   const snippetOperations = useSnippetsOperations()
 
   return useMutation<TestCaseResult, Error, { snippetId: string; testId: string }>(
-      ({ snippetId, testId }) => snippetOperations.testSnippet(snippetId, testId)
+      ({ snippetId, testId }) => snippetOperations.testSnippet(snippetId, testId),
+      {
+        onSuccess: (_, variables) => {
+          onSuccess?.(variables)
+        }
+      }
   )
 }
 

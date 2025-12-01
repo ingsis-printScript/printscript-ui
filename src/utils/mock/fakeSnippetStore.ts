@@ -134,13 +134,15 @@ const fakeTestCases: TestCase[] = [
     id: uuid(),
     name: "Test Case 1",
     input: ["A", "B"],
-    output: ["C", "D"]
+    output: ["C", "D"],
+    status: "PENDING"
   },
   {
     id: uuid(),
     name: "Test Case 2",
     input: ["E", "F"],
-    output: ["G", "H"]
+    output: ["G", "H"],
+    status: "PENDING"
   },
 ]
 
@@ -248,7 +250,7 @@ export class FakeSnippetStore {
 
   postTestCase(testCase: Partial<TestCase>): TestCase {
     const id = testCase.id ?? uuid()
-    const newTestCase = {...testCase, id} as TestCase
+    const newTestCase = {...testCase, id, status: testCase.status ?? "PENDING"} as TestCase
     this.testCaseMap.set(id,newTestCase)
     return newTestCase
   }
@@ -258,8 +260,13 @@ export class FakeSnippetStore {
     if (!id) {
       throw new Error("Cannot update test case without id")
     }
-    const existing = this.testCaseMap.get(id) ?? {}
-    const updated = { ...existing, ...testCase, id } as TestCase
+    const existing: Partial<TestCase> = this.testCaseMap.get(id) ?? {}
+    const updated: TestCase = {
+      ...(existing as TestCase),
+      ...testCase,
+      id,
+      status: testCase.status ?? existing.status ?? "PENDING"
+    }
     this.testCaseMap.set(id, updated)
     return updated
   }
