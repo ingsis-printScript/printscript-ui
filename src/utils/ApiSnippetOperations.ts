@@ -92,7 +92,8 @@ export class ApiSnippetOperations implements SnippetOperations {
         };
         formData.append('data', new Blob([JSON.stringify(snippetData)], { type: 'application/json' }));
 
-        formData.append('content', createSnippet.content);
+        // ✅ FIX: Enviar content como Blob con tipo text/plain
+        formData.append('content', new Blob([createSnippet.content], { type: 'text/plain' }));
 
         const response = await this.client.post<{
             id: string;
@@ -141,13 +142,12 @@ export class ApiSnippetOperations implements SnippetOperations {
         };
     }
 
-
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async updateSnippetById(id: string, updateSnippet: UpdateSnippet): Promise<Snippet> {
         const formData = new FormData();
 
-        formData.append('content', updateSnippet.content);
+        // ✅ FIX: Enviar content como Blob
+        formData.append('content', new Blob([updateSnippet.content], { type: 'text/plain' }));
 
         const response = await this.client.patch<{
             id: string;
@@ -170,8 +170,6 @@ export class ApiSnippetOperations implements SnippetOperations {
             author: data.userId,
         };
     }
-
-
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
