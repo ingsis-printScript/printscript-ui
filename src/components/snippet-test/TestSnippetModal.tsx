@@ -48,13 +48,21 @@ export const TestSnippetModal = ({open, onClose, snippetId}: TestSnippetModalPro
                     </IconButton>
                 </Tabs>
                 {testCases?.map((testCase, index) => (
-                    <TabPanel index={index} value={value} test={testCase}
-                              setTestCase={(tc) => postTestCase({ snippetId, testCase: tc })}
-                              removeTestCase={(testId) => removeTestCase({ snippetId, testId })}
+                    <TabPanel
+                        key={testCase.id}
+                        index={index}
+                        value={value}
+                        test={testCase}
+                        snippetId={snippetId}
+                        setTestCase={(tc) => postTestCase({ snippetId, testCase: tc })}
+                        removeTestCase={(testId) => removeTestCase({ snippetId, testId })}
                     />
                 ))}
-                <TabPanel index={(testCases?.length ?? 0) + 1} value={value}
-                          setTestCase={(tc) => postTestCase({ snippetId, testCase: tc })}
+                <TabPanel
+                    index={(testCases?.length ?? 0) + 1}
+                    value={value}
+                    snippetId={snippetId}
+                    setTestCase={(tc) => postTestCase({ snippetId, testCase: tc })}
                 />
             </Box>
         </ModalWrapper>
