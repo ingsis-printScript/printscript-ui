@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {TestCase} from "../../types/TestCase.ts";
 import {Autocomplete, Box, Button, Chip, TextField, Typography} from "@mui/material";
 import {BugReport, Delete, Save} from "@mui/icons-material";
@@ -24,6 +24,9 @@ export const TabPanel = ({value, index, test: initialTest, snippetId, setTestCas
             }
         }
     });
+    useEffect(() => {
+        setTestData(initialTest);
+    }, [initialTest]);
     const currentStatus = testData?.status;
     const statusChip = currentStatus === "PASS"
         ? <Chip label="Pass" color="success"/>
