@@ -104,6 +104,16 @@ export const usePostTestCase = ({onSuccess}: {onSuccess: () => void}) => {
 };
 
 
+export const useUpdateTestCase = ({onSuccess}: {onSuccess: () => void}) => {
+  const snippetOperations = useSnippetsOperations()
+
+  return useMutation<TestCase, Error, { snippetId: string; testCase: Partial<TestCase> }>(
+      ({ snippetId, testCase }) => snippetOperations.updateTestCase(snippetId, testCase.id!, testCase),
+      { onSuccess }
+  );
+};
+
+
 export const useRemoveTestCase = ({onSuccess}: {onSuccess: () => void}) => {
   const snippetOperations = useSnippetsOperations()
 

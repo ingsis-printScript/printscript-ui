@@ -307,6 +307,28 @@ export class ApiSnippetOperations implements SnippetOperations {
     };
   }
 
+  async updateTestCase(snippetId: string, testId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    const response = await this.client.put<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      valid: boolean;
+    }>(`/snippets-test/${snippetId}/tests/${testId}`, {
+      name: testCase.name,
+      inputs: testCase.input || [],
+      expectedOutputs: testCase.output || [],
+    });
+
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      input: response.data.inputs,
+      output: response.data.expectedOutputs,
+    };
+  }
+
   async removeTestCase(snippetId: string, testId: string): Promise<string> {
     await this.client.delete(`/snippets-test/${snippetId}/tests/${testId}`);
     return testId;
