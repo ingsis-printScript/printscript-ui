@@ -115,6 +115,14 @@ export class FakeSnippetOperations implements SnippetOperations {
     })
   }
 
+  updateTestCase(snippetId: string, testId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    void snippetId
+    void testId
+    return new Promise(resolve => {
+      setTimeout(() => resolve(this.fakeStore.updateTestCase(testCase as TestCase)), DELAY)
+    })
+  }
+
   removeTestCase(snippetId: string, testId: string): Promise<string> {
     void snippetId
     return new Promise(resolve => {

@@ -253,6 +253,17 @@ export class FakeSnippetStore {
     return newTestCase
   }
 
+  updateTestCase(testCase: Partial<TestCase>): TestCase {
+    const id = testCase.id
+    if (!id) {
+      throw new Error("Cannot update test case without id")
+    }
+    const existing = this.testCaseMap.get(id) ?? {}
+    const updated = { ...existing, ...testCase, id } as TestCase
+    this.testCaseMap.set(id, updated)
+    return updated
+  }
+
   removeTestCase(id: string): string {
     this.testCaseMap.delete(id)
     return id
