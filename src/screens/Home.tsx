@@ -17,7 +17,7 @@ const HomeScreen = () => {
   const [lintStatus, setLintStatus] = useState<string | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
-  const [relationshipType, setRelationshipType] = useState<RelationshipType>('owner');
+  const [relationshipType, setRelationshipType] = useState<RelationshipType>('both');
   const [snippetId, setSnippetId] = useState<string | null>(null)
   const {page, page_size, count, handleChangeCount} = usePaginationContext()
   const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus, sortBy, sortOrder, relationshipType)
@@ -54,7 +54,7 @@ const HomeScreen = () => {
     setSnippetName('');
     setLanguage(undefined);
     setLintStatus(undefined);
-    setRelationshipType('owner');
+    setRelationshipType('both');
   };
 
   const handleSort = (field: string) => {

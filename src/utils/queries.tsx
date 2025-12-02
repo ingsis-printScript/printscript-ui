@@ -28,9 +28,9 @@ export const useSnippetsOperations = () => {
 }
 
 export const useGetSnippets = (
-            page: number = 0, pageSize: number = 10, 
-            snippetName?: string, language?: string, lintStatus?: string, 
-            sortBy?: string, sortOrder?: string, relationshipType: RelationshipType = "owner"
+            page: number = 0, pageSize: number = 10,
+            snippetName?: string, language?: string, lintStatus?: string,
+            sortBy?: string, sortOrder?: string, relationshipType: RelationshipType = "both"
   ) => {
   const snippetOperations = useSnippetsOperations()
 
