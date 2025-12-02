@@ -26,7 +26,6 @@ export const ShareSnippetModal = (props: ShareSnippetModalProps) => {
       (u) => u.id !== currentUserId
   );
 
-    console.log('ShareSnippetModal getPermissionsForUser is defined?', !!getPermissionsForUser); // 👈
 
     useEffect(() => {
     const getData = setTimeout(() => {
