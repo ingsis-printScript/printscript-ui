@@ -1,16 +1,16 @@
-import axios, { AxiosInstance } from 'axios';
-import { SnippetOperations } from './snippetOperations';
-import { ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from '../types/snippet.ts';
-import { PaginatedUsers } from '../types/users.ts';
-import { TestCase } from '../types/TestCase';
-import { TestCaseResult } from './queries';
-import { FileType } from '../types/FileType';
-import { Rule } from '../types/Rule';
-import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
-import { RelationshipType } from '../types/Relationship';
+import axios, {AxiosInstance} from 'axios';
+import {SnippetOperations} from './snippetOperations';
+import {ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../types/snippet.ts';
+import {BackendPaginatedUsers, PaginatedUsers} from '../types/users.ts';
+import {TestCase} from '../types/TestCase';
+import {TestCaseResult} from './queries';
+import {FileType} from '../types/FileType';
+import {Rule} from '../types/Rule';
+import {LintStatus, SnippetResponse} from '../types/SnippetResponse';
+import {RelationshipType} from '../types/Relationship';
 import autoBind from 'auto-bind';
 import {PermissionLevel, UserSnippetPermissions} from "../types/Permission.ts";
-import {BackendPaginatedUsers} from "../types/users.ts";
+import {generateRequestId} from "./requestId.ts";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
 
@@ -45,7 +45,13 @@ export class ApiSnippetOperations implements SnippetOperations {
     this.client.interceptors.request.use(async (config) => {
       try {
         const token = await this.getToken();
+        config.headers = config.headers || {};
+
         config.headers.Authorization = `Bearer ${token}`;
+
+        if (!config.headers['X-Request-Id']) {
+            config.headers['X-Request-Id'] = generateRequestId();
+        }
       } catch (error) {
         console.error('Error getting access token:', error);
       }
@@ -103,8 +109,6 @@ export class ApiSnippetOperations implements SnippetOperations {
       snippets,
     };
   }
-
-  // TODO: al hacer lo de abajo, sacar el eslint-disable y los underscores (son por issues de unused vars)
 
   async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     const formData = new FormData();
@@ -262,7 +266,7 @@ export class ApiSnippetOperations implements SnippetOperations {
   async formatSnippet(snippetId: string, code: string): Promise<string> {
       const response = await this.client.post<{ code: string }>(
           '/formatter/format',
-          { snippetId, code } // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
+          { snippetId, code }
       );
       return response.data.code;
   }

@@ -7,6 +7,7 @@ import RulesScreen from "./screens/Rules.tsx";
 import {withAuthenticationRequired, useAuth0} from "@auth0/auth0-react";
 import {useEffect} from "react";
 import axios from "axios";
+import {generateRequestId} from "./utils/requestId.ts";
 
 const router = createBrowserRouter([
     {
@@ -29,7 +30,6 @@ const AppInner = () => {
 
     useEffect(() => {
         const syncUser = async () => {
-            console.log("Syncing user", { sub: user?.sub, email: user?.email });
             if (!isAuthenticated || !user?.sub || !user.email) return;
 
             const key = `user-synced-${user.sub}`;
@@ -37,6 +37,8 @@ const AppInner = () => {
 
             try {
                 const token = await getAccessTokenSilently();
+
+                const requestId = generateRequestId();
 
                 await axios.post(
                     `${API_URL}/snippets-sharing/users/sync`,
@@ -47,6 +49,7 @@ const AppInner = () => {
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
+                            "X-Request-Id": requestId,
                         },
                     }
                 );

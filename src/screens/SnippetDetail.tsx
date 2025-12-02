@@ -7,9 +7,11 @@ import "prismjs/themes/prism-okaidia.css";
 import {Alert, Box, CircularProgress, IconButton, Menu, MenuItem, Tooltip, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {
-  useUpdateSnippetById
+    useFormatSnippet,
+    useGetSnippetById,
+    useShareSnippet,
+    useUpdateSnippetById
 } from "../utils/queries.tsx";
-import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
 import {BugReport, Delete, Download, Edit, PlayArrow, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
@@ -107,9 +109,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     const fetchPermissionsForUser = async (
         userId: string
     ): Promise<{ read: boolean; write: boolean }> => {
-        const perms = await snippetOperations.getUserSnippetPermissions(id, userId);
-
-        return perms;
+        return await snippetOperations.getUserSnippetPermissions(id, userId);
     };
 
   const handleRunSnippet = () => {
