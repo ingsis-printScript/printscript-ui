@@ -7,9 +7,12 @@ import "prismjs/themes/prism-okaidia.css";
 import {Alert, Box, CircularProgress, IconButton, Menu, MenuItem, Tooltip, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {
-  useUpdateSnippetById
+    useFormatSnippet,
+    useGetSnippetById,
+    useShareSnippet,
+    useSnippetsOperations,
+    useUpdateSnippetById
 } from "../utils/queries.tsx";
-import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
 import {BugReport, Delete, Download, Edit, PlayArrow, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
@@ -20,7 +23,6 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";
 import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 import {AddSnippetModal} from "../components/snippet-table/AddSnippetModal.tsx";
-import { useSnippetsOperations } from "../utils/queries.tsx";
 
 type SnippetDetailProps = {
   id: string;
@@ -105,13 +107,8 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     const fetchPermissionsForUser = async (
         userId: string
     ): Promise<{ read: boolean; write: boolean }> => {
-        console.log('fetchPermissionsForUser called', { snippetId: id, userId }); // 👈
 
-        const perms = await snippetOperations.getUserSnippetPermissions(id, userId);
-
-        console.log('fetchPermissionsForUser response', perms); // 👈
-
-        return perms;
+        return await snippetOperations.getUserSnippetPermissions(id, userId);
     };
 
   const handleRunSnippet = () => {
