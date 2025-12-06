@@ -12,7 +12,9 @@ import autoBind from 'auto-bind';
 import {PermissionLevel, UserSnippetPermissions} from "../types/Permission.ts";
 import {generateRequestId} from "./requestId.ts";
 
-const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
+// Use relative path - Vite proxy will forward to VM backend
+const API_URL = '/api/snippet-service';
+console.log('Using API_URL (will be proxied to VM):', API_URL);
 
 // Helper function to map backend LintStatus to frontend ComplianceEnum
 function mapLintStatusToCompliance(lintStatus: LintStatus): ComplianceEnum {

@@ -123,7 +123,7 @@ export const SnippetTable = (props: SnippetTableProps) => {
             sx={{minWidth: 150}}
           >
             <MenuItem value="">All Languages</MenuItem>
-            {fileTypes?.map((ft) => (
+            {Array.isArray(fileTypes) && fileTypes.map((ft) => (
               <MenuItem key={ft.language} value={ft.language}>{ft.language}</MenuItem>
             ))}
           </Select>
