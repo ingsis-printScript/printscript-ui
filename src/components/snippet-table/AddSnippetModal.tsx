@@ -19,7 +19,7 @@ import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
 import "prismjs/themes/prism-okaidia.css";
 import {Save} from "@mui/icons-material";
-import {CreateSnippet, CreateSnippetWithLang} from "../../utils/snippet.ts";
+import {CreateSnippet, CreateSnippetWithLang} from "../../types/snippet.ts";
 import {ModalWrapper} from "../common/ModalWrapper.tsx";
 import {useCreateSnippet, useGetFileTypes} from "../../utils/queries.tsx";
 import {queryClient} from "../../App.tsx";

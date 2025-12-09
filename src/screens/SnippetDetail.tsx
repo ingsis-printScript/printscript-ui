@@ -7,19 +7,23 @@ import "prismjs/themes/prism-okaidia.css";
 import {Alert, Box, CircularProgress, IconButton, Menu, MenuItem, Tooltip, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import {
-  useUpdateSnippetById
+    useFormatSnippet,
+    useGetSnippetById,
+    useShareSnippet,
+    useUpdateSnippetById
 } from "../utils/queries.tsx";
-import {useFormatSnippet, useGetSnippetById, useShareSnippet} from "../utils/queries.tsx";
 import {Bòx} from "../components/snippet-table/SnippetBox.tsx";
 import {BugReport, Delete, Download, Edit, PlayArrow, Save, Share} from "@mui/icons-material";
 import {ShareSnippetModal} from "../components/snippet-detail/ShareSnippetModal.tsx";
 import {TestSnippetModal} from "../components/snippet-test/TestSnippetModal.tsx";
-import {CreateSnippet, Snippet} from "../utils/snippet.ts";
+import {CreateSnippet, Snippet} from "../types/snippet.ts";
 import {SnippetExecution, SnippetExecutionHandle} from "./SnippetExecution.tsx";
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import {queryClient} from "../App.tsx";
 import {DeleteConfirmationModal} from "../components/snippet-detail/DeleteConfirmationModal.tsx";
 import {AddSnippetModal} from "../components/snippet-table/AddSnippetModal.tsx";
+import { useSnippetsOperations } from "../utils/queries.tsx";
+import axios from "axios";
 
 type SnippetDetailProps = {
   id: string;
@@ -93,12 +97,20 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
   const [deleteConfirmationModalOpen, setDeleteConfirmationModalOpen] = useState(false)
   const [testModalOpened, setTestModalOpened] = useState(false);
   const [editModalOpened, setEditModalOpened] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const executionRef = useRef<SnippetExecutionHandle>(null);
 
   const {data: snippet, isLoading} = useGetSnippetById(id);
-  const {mutate: shareSnippet, isLoading: loadingShare} = useShareSnippet()
+  const {mutateAsync: shareSnippet, isLoading: loadingShare} = useShareSnippet()
   const {mutate: formatSnippet, isLoading: isFormatLoading, data: formatSnippetData} = useFormatSnippet()
   const {mutateAsync: updateSnippet, isLoading: isUpdateSnippetLoading} = useUpdateSnippetById({onSuccess: () => queryClient.invalidateQueries(['snippet', id])})
+  const snippetOperations = useSnippetsOperations();
+
+    const fetchPermissionsForUser = async (
+        userId: string
+    ): Promise<{ read: boolean; write: boolean }> => {
+        return await snippetOperations.getUserSnippetPermissions(id, userId);
+    };
 
   const handleRunSnippet = () => {
     if (snippet && executionRef.current) {
@@ -119,9 +131,18 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
     }
   }, [formatSnippetData])
 
+  useEffect(() => {
+    setValidationErrors([]);
+  }, [code])
 
-  async function handleShareSnippet(userId: string) {
-    shareSnippet({snippetId: id, userId})
+
+  async function handleShareSnippet(userId: string, permissions: { read: boolean; write: boolean }) {
+      try {
+          await shareSnippet({snippetId: id, userId, permissions});
+          setShareModalOpened(false);
+      } catch (e) {
+          console.error(e);
+      }
   }
 
   async function handleEditSnippet(snippetData: CreateSnippet) {
@@ -136,6 +157,26 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
       }
     });
     setEditModalOpened(false);
+  }
+
+  async function handleSaveContent() {
+    setValidationErrors([]);
+
+    try {
+      await updateSnippet({id: id, updateSnippet: {content: code}});
+      queryClient.invalidateQueries(['snippet', id]);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        const errorData = error.response.data;
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          setValidationErrors(errorData.errors);
+        } else {
+          setValidationErrors([errorData.message || "Validation failed"]);
+        }
+      } else {
+        setValidationErrors(["An unexpected error occurred. Please try again."]);
+      }
+    }
   }
 
   return (
@@ -190,7 +231,7 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                 </IconButton>
               </Tooltip>
               <Tooltip title={"Save changes"}>
-                <IconButton color={"primary"} onClick={() => updateSnippet({id: id, updateSnippet: {content: code}})} disabled={isUpdateSnippetLoading || snippet?.content === code} >
+                <IconButton color={"primary"} onClick={handleSaveContent} disabled={isUpdateSnippetLoading || snippet?.content === code} >
                   <Save />
                 </IconButton>
               </Tooltip>
@@ -200,6 +241,16 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
                 </IconButton>
               </Tooltip>
             </Box>
+            {validationErrors.length > 0 && (
+              <Alert severity="error" sx={{mt: 2}}>
+                <Typography variant="subtitle2" fontWeight="bold">Validation Errors:</Typography>
+                <ul style={{margin: '8px 0', paddingLeft: '20px'}}>
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </Alert>
+            )}
             <Box display={"flex"} gap={2}>
               <Bòx flex={1} height={"fit-content"} overflow={"none"} minHeight={"500px"} bgcolor={'black'} color={'white'} code={code}>
                 <Editor
@@ -222,10 +273,12 @@ export const SnippetDetail = (props: SnippetDetailProps) => {
             </Box>
           </>
         }
-        <ShareSnippetModal loading={loadingShare || isLoading} open={shareModalOpened}
+        <ShareSnippetModal loading={loadingShare || isLoading}
+                           open={shareModalOpened}
                            onClose={() => setShareModalOpened(false)}
-                           onShare={handleShareSnippet}/>
-        <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)}/>
+                           onShare={handleShareSnippet}
+                           getPermissionsForUser={fetchPermissionsForUser}/>
+        <TestSnippetModal open={testModalOpened} onClose={() => setTestModalOpened(false)} snippetId={id}/>
         <DeleteConfirmationModal open={deleteConfirmationModalOpen} onClose={() => setDeleteConfirmationModalOpen(false)} id={snippet?.id ?? ""} setCloseDetails={handleCloseModal} />
         <AddSnippetModal
           open={editModalOpened}

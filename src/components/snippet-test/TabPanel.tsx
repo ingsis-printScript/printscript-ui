@@ -1,21 +1,38 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {TestCase} from "../../types/TestCase.ts";
 import {Autocomplete, Box, Button, Chip, TextField, Typography} from "@mui/material";
 import {BugReport, Delete, Save} from "@mui/icons-material";
+import {queryClient} from "../../App.tsx";
 import {useTestSnippet} from "../../utils/queries.tsx";
 
 type TabPanelProps = {
     index: number;
     value: number;
     test?: TestCase;
+    snippetId: string;
     setTestCase: (test: Partial<TestCase>) => void;
     removeTestCase?: (testIndex: string) => void;
 }
 
-export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTestCase}: TabPanelProps) => {
+export const TabPanel = ({value, index, test: initialTest, snippetId, setTestCase, removeTestCase}: TabPanelProps) => {
     const [testData, setTestData] = useState<Partial<TestCase> | undefined>(initialTest);
 
-    const {mutateAsync: testSnippet, data} = useTestSnippet();
+    const {mutateAsync: testSnippet, data} = useTestSnippet({
+        onSuccess: () => {
+            if (testData?.id) {
+                queryClient.invalidateQueries(['testCases', snippetId])
+            }
+        }
+    });
+    useEffect(() => {
+        setTestData(initialTest);
+    }, [initialTest]);
+    const currentStatus = testData?.status;
+    const statusChip = currentStatus === "PASS"
+        ? <Chip label="Pass" color="success"/>
+        : currentStatus === "FAIL"
+            ? <Chip label="Fail" color="error"/>
+            : <Chip label="Pending" color="warning"/>;
 
 
     return (
@@ -88,12 +105,17 @@ export const TabPanel = ({value, index, test: initialTest, setTestCase, removeTe
                         <Button disabled={!testData?.name} onClick={() => setTestCase(testData ?? {})} variant={"outlined"} startIcon={<Save/>}>
                             Save
                         </Button>
-                        <Button onClick={() => testSnippet(testData ?? {})} variant={"contained"} startIcon={<BugReport/>}
-                                disableElevation>
+                        <Button
+                            onClick={() => testSnippet({ snippetId, testId: testData?.id ?? '' })}
+                            variant={"contained"}
+                            startIcon={<BugReport/>}
+                            disabled={!testData?.id}
+                            disableElevation>
                             Test
                         </Button>
-                        {data && (data === "success" ? <Chip label="Pass" color="success"/> :
-                            <Chip label="Fail" color="error"/>)}
+                        {data
+                            ? (data === "success" ? <Chip label="Pass" color="success"/> : <Chip label="Fail" color="error"/>)
+                            : statusChip}
                     </Box>
                 </Box>
             )}

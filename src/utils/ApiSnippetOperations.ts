@@ -1,13 +1,16 @@
-import axios, { AxiosInstance } from 'axios';
-import { SnippetOperations } from './snippetOperations';
-import { ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet } from './snippet';
-import { PaginatedUsers } from './users';
-import { TestCase } from '../types/TestCase';
-import { TestCaseResult } from './queries';
-import { FileType } from '../types/FileType';
-import { Rule } from '../types/Rule';
-import { LintStatus, SnippetResponse } from '../types/SnippetResponse';
+import axios, {AxiosInstance} from 'axios';
+import {SnippetOperations} from './snippetOperations';
+import {ComplianceEnum, CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../types/snippet.ts';
+import {BackendPaginatedUsers, PaginatedUsers} from '../types/users.ts';
+import {TestCase} from '../types/TestCase';
+import {TestCaseResult} from './queries';
+import {FileType} from '../types/FileType';
+import {Rule} from '../types/Rule';
+import {LintStatus, SnippetResponse} from '../types/SnippetResponse';
+import {RelationshipType} from '../types/Relationship';
 import autoBind from 'auto-bind';
+import {PermissionLevel, UserSnippetPermissions} from "../types/Permission.ts";
+import {generateRequestId} from "./requestId.ts";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/snippet-service';
 
@@ -42,7 +45,13 @@ export class ApiSnippetOperations implements SnippetOperations {
     this.client.interceptors.request.use(async (config) => {
       try {
         const token = await this.getToken();
+        config.headers = config.headers || {};
+
         config.headers.Authorization = `Bearer ${token}`;
+
+        if (!config.headers['X-Request-Id']) {
+            config.headers['X-Request-Id'] = generateRequestId();
+        }
       } catch (error) {
         console.error('Error getting access token:', error);
       }
@@ -55,7 +64,7 @@ export class ApiSnippetOperations implements SnippetOperations {
   async listSnippetDescriptors(
             page: number, pageSize: number, 
             snippetName?: string, language?: string, lintStatus?: string, 
-            sortBy?: string, sortOrder?: string
+            sortBy?: string, sortOrder?: string, relationshipType?: RelationshipType
     ): Promise<PaginatedSnippets> {
     const params: Record<string, string | number> = { page, pageSize };
     if (snippetName) params.name = snippetName;
@@ -67,6 +76,8 @@ export class ApiSnippetOperations implements SnippetOperations {
     if (sortBy) params.sortBy = sortBy;
 
     if (sortOrder) params.sortOrder = sortOrder;
+
+    if (relationshipType) params.relationshipType = relationshipType;
 
     const response = await this.client.get<{
       content: SnippetResponse[];
@@ -87,7 +98,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: s.extension,
       version: s.version,
       compliance: mapLintStatusToCompliance(s.lintStatus),
-      author: s.userId,
+      author: s.authorName,
       lintErrors: s.lintErrors ?? undefined,
     }));
 
@@ -98,8 +109,6 @@ export class ApiSnippetOperations implements SnippetOperations {
       snippets,
     };
   }
-
-  // TODO: al hacer lo de abajo, sacar el eslint-disable y los underscores (son por issues de unused vars)
 
   async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     const formData = new FormData();
@@ -131,10 +140,26 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: data.extension,
       version: data.version,
       compliance: mapLintStatusToCompliance(data.lintStatus),
-      author: data.userId,
+      author: data.authorName,
       lintErrors: data.lintErrors ?? undefined,
     };
   }
+
+    async getUserSnippetPermissions(
+        snippetId: string,
+        userId: string
+    ): Promise<UserSnippetPermissions> {
+        const response = await this.client.get<{ canRead: boolean; canWrite: boolean }>(
+            '/snippets-sharing/permissions',
+            { params: { snippetId, userId } }
+        );
+
+        const data = response.data;
+        return {
+            read: data.canRead,
+            write: data.canWrite,
+        };
+    }
 
   async getSnippetById(id: string): Promise<Snippet | undefined> {
     try {
@@ -151,7 +176,7 @@ export class ApiSnippetOperations implements SnippetOperations {
         extension: data.extension,
         version: data.version,
         compliance: mapLintStatusToCompliance(data.lintStatus),
-        author: data.userId,
+        author: data.authorName,
         lintErrors: data.lintErrors ?? undefined,
       };
     } catch (error) {
@@ -208,7 +233,7 @@ export class ApiSnippetOperations implements SnippetOperations {
       extension: data.extension,
       version: data.version,
       compliance: mapLintStatusToCompliance(data.lintStatus),
-      author: data.userId,
+      author: data.authorName,
       lintErrors: data.lintErrors ?? undefined,
     };
   }
@@ -241,39 +266,155 @@ export class ApiSnippetOperations implements SnippetOperations {
   async formatSnippet(snippetId: string, code: string): Promise<string> {
       const response = await this.client.post<{ code: string }>(
           '/formatter/format',
-          { snippetId, code } // TODO: ver si paso snippetId o version directo (id feels cleaner but is less efficient)
+          { snippetId, code }
       );
       return response.data.code;
   }
 
-  async getTestCases(): Promise<TestCase[]> {
-    throw new Error('Not implemented yet');
+  async getTestCases(snippetId: string): Promise<TestCase[]> {
+    const response = await this.client.get<Array<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      status: 'PENDING' | 'PASS' | 'FAIL';
+    }>>(`/snippets-test/${snippetId}/tests`);
+
+    return response.data.map(test => ({
+      id: test.id,
+      name: test.name,
+      input: test.inputs,
+      output: test.expectedOutputs,
+      status: test.status,
+    }));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async postTestCase(_testCase: Partial<TestCase>): Promise<TestCase> {
-    throw new Error('Not implemented yet');
+  async postTestCase(snippetId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    const response = await this.client.post<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      status: 'PENDING' | 'PASS' | 'FAIL';
+    }>(`/snippets-test/${snippetId}/tests`, {
+      name: testCase.name,
+      inputs: testCase.input || [],
+      expectedOutputs: testCase.output || [],
+    });
+
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      input: response.data.inputs,
+      output: response.data.expectedOutputs,
+      status: response.data.status,
+    };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async removeTestCase(_id: string): Promise<string> {
-    throw new Error('Not implemented yet');
+  async updateTestCase(snippetId: string, testId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    const response = await this.client.put<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      status: 'PENDING' | 'PASS' | 'FAIL';
+    }>(`/snippets-test/${snippetId}/tests/${testId}`, {
+      name: testCase.name,
+      inputs: testCase.input || [],
+      expectedOutputs: testCase.output || [],
+    });
+
+    return {
+      id: response.data.id,
+      name: response.data.name,
+      input: response.data.inputs,
+      output: response.data.expectedOutputs,
+      status: response.data.status,
+    };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async testSnippet(_testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    throw new Error('Not implemented yet');
+  async removeTestCase(snippetId: string, testId: string): Promise<string> {
+    await this.client.delete(`/snippets-test/${snippetId}/tests/${testId}`);
+    return testId;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getUserFriends(_name?: string, _page?: number, _pageSize?: number): Promise<PaginatedUsers> {
-      throw new Error('Not implemented yet');
+  async testSnippet(snippetId: string, testId: string): Promise<TestCaseResult> {
+    const response = await this.client.post<{
+      id: string;
+      snippetId: string | null;
+      name: string;
+      inputs: string[];
+      expectedOutputs: string[];
+      status: 'PENDING' | 'PASS' | 'FAIL';
+    }>(`/snippets-test/${snippetId}/tests/${testId}/run`);
+
+    return response.data.status === 'PASS' ? 'success' : 'fail';
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async shareSnippet(_snippetId: string, _userId: string): Promise<Snippet> {
-      throw new Error('Not implemented yet');
+  async getUserFriends(name: string = "", page: number = 0, pageSize: number = 10): Promise<PaginatedUsers> {
+      const params: Record<string, string | number> = { page, pageSize };
+      if (name) params.search = name;
+
+      const response = await this.client.get<BackendPaginatedUsers>('/snippets-sharing', { params });
+      const data = response.data;
+
+      return {
+          page: data.page,
+          page_size: data.pageSize,
+          count: data.totalElements,
+          users: data.users.map((u) => ({
+              id: u.id,
+              name: u.displayName || u.email.split('@')[0],
+          })),
+      };
   }
+
+    async shareSnippet(
+        snippetId: string,
+        userId: string,
+        permissions: { read: boolean; write: boolean }
+    ): Promise<void> {
+      const baseBody = { snippetId, userId };
+
+      const calls: Promise<unknown>[] = [];
+
+      if (!permissions.read && !permissions.write) {
+          calls.push(
+              this.client.post('/snippets-sharing/revoke', {
+                  ...baseBody,
+                  permission: 'READ' as PermissionLevel,
+              })
+          );
+      }
+      else if (permissions.write) {
+          calls.push(
+              this.client.post('/snippets-sharing/share', {
+                  ...baseBody,
+                  permission: 'WRITE' as PermissionLevel,
+              })
+          );
+      }
+      else if (permissions.read) {
+          calls.push(
+              this.client.post('/snippets-sharing/share', {
+                  ...baseBody,
+                  permission: 'READ' as PermissionLevel,
+              })
+          );
+          calls.push(
+              this.client.post('/snippets-sharing/revoke', {
+                  ...baseBody,
+                  permission: 'WRITE' as PermissionLevel,
+              })
+          );
+      }
+
+      await Promise.all(calls);
+  }
+
 
   async getFileTypes(): Promise<FileType[]> {
       const response =

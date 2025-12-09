@@ -21,10 +21,11 @@ import {AddSnippetModal} from "./AddSnippetModal.tsx";
 import {useRef, useState} from "react";
 import {Add, Clear, Search} from "@mui/icons-material";
 import {LoadingSnippetRow, SnippetRow} from "./SnippetRow.tsx";
-import {CreateSnippetWithLang, getFileLanguage, Snippet} from "../../utils/snippet.ts";
+import {CreateSnippetWithLang, getFileLanguage, Snippet} from "../../types/snippet.ts";
 import {usePaginationContext} from "../../contexts/paginationContext.tsx";
 import {useSnackbarContext} from "../../contexts/snackbarContext.tsx";
 import {useGetFileTypes} from "../../utils/queries.tsx";
+import {RelationshipType} from "../../types/Relationship.ts";
 
 type SnippetTableProps = {
   handleClickSnippet: (id: string) => void;
@@ -39,10 +40,12 @@ type SnippetTableProps = {
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
   onSort: (field: string) => void;
+  relationshipType: RelationshipType;
+  onRelationshipTypeChange: (relationshipType: RelationshipType) => void;
 }
 
 export const SnippetTable = (props: SnippetTableProps) => {
-  const {snippets, handleClickSnippet, loading, handleSearchSnippet, language, lintStatus, onLanguageChange, onLintStatusChange, onClearFilters, sortBy, sortOrder, onSort} = props;
+  const {snippets, handleClickSnippet, loading, handleSearchSnippet, language, lintStatus, onLanguageChange, onLintStatusChange, onClearFilters, sortBy, sortOrder, onSort, relationshipType, onRelationshipTypeChange} = props;
   const [addModalOpened, setAddModalOpened] = useState(false);
   const [popoverMenuOpened, setPopoverMenuOpened] = useState(false)
   const [snippet, setSnippet] = useState<CreateSnippetWithLang | undefined>()
@@ -139,7 +142,22 @@ export const SnippetTable = (props: SnippetTableProps) => {
             <MenuItem value="FAILED">Failed</MenuItem>
           </Select>
 
-          <Button
+            {/* Relationship */}
+            <Select
+                value={relationshipType}
+                onChange={(e: SelectChangeEvent) =>
+                    onRelationshipTypeChange(e.target.value as RelationshipType)
+                }
+                size="small"
+                sx={{ minWidth: 180 }}
+            >
+                <MenuItem value="owner">Owned</MenuItem>
+                <MenuItem value="shared">Shared</MenuItem>
+                <MenuItem value="both">All (Owned + Shared)</MenuItem>
+            </Select>
+
+
+            <Button
             variant="outlined"
             size="small"
             startIcon={<Clear />}

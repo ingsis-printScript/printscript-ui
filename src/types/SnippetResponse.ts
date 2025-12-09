@@ -11,4 +11,5 @@ export type SnippetResponse = {
   content: string;
   lintStatus: LintStatus;
   lintErrors: string[] | null;
+  authorName: string;
 };

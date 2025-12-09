@@ -7,6 +7,7 @@ import {Drawer} from "@mui/material";
 import {useGetSnippets} from "../utils/queries.tsx";
 import {usePaginationContext} from "../contexts/paginationContext.tsx";
 import useDebounce from "../hooks/useDebounce.ts";
+import {RelationshipType} from "../types/Relationship.ts";
 
 const HomeScreen = () => {
   const {id: paramsId} = useParams<{ id: string }>();
@@ -16,9 +17,10 @@ const HomeScreen = () => {
   const [lintStatus, setLintStatus] = useState<string | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const [relationshipType, setRelationshipType] = useState<RelationshipType>('both');
   const [snippetId, setSnippetId] = useState<string | null>(null)
   const {page, page_size, count, handleChangeCount} = usePaginationContext()
-  const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus, sortBy, sortOrder)
+  const {data, isLoading} = useGetSnippets(page, page_size, snippetName, language, lintStatus, sortBy, sortOrder, relationshipType)
 
   useEffect(() => {
     if (data?.count && data.count != count) {
@@ -52,6 +54,7 @@ const HomeScreen = () => {
     setSnippetName('');
     setLanguage(undefined);
     setLintStatus(undefined);
+    setRelationshipType('both');
   };
 
   const handleSort = (field: string) => {
@@ -78,6 +81,8 @@ const HomeScreen = () => {
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSort={handleSort}
+          relationshipType={relationshipType}
+          onRelationshipTypeChange={setRelationshipType}
         />
         <Drawer open={!!snippetId} anchor={"right"} onClose={handleCloseModal}>
           {snippetId && <SnippetDetail handleCloseModal={handleCloseModal} id={snippetId}/>}

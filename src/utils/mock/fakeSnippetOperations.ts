@@ -1,12 +1,13 @@
 import {SnippetOperations} from '../snippetOperations'
 import {FakeSnippetStore} from './fakeSnippetStore'
-import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../snippet'
+import {CreateSnippet, PaginatedSnippets, Snippet, UpdateSnippet} from '../../types/snippet.ts'
 import autoBind from 'auto-bind'
-import {PaginatedUsers} from "../users.ts";
+import {PaginatedUsers} from "../../types/users.ts";
 import {TestCase} from "../../types/TestCase.ts";
 import {TestCaseResult} from "../queries.tsx";
 import {FileType} from "../../types/FileType.ts";
 import {Rule} from "../../types/Rule.ts";
+import {UserSnippetPermissions} from "../../types/Permission";
 
 const DELAY: number = 1000
 
@@ -28,6 +29,23 @@ export class FakeSnippetOperations implements SnippetOperations {
       setTimeout(() => resolve(this.fakeStore.getSnippetById(id)), DELAY)
     })
   }
+
+
+    getUserSnippetPermissions(snippetId: string, userId: string): Promise<UserSnippetPermissions> {
+        void snippetId;
+        void userId;
+
+        return new Promise(resolve => {
+            setTimeout(
+                () =>
+                    resolve({
+                        read: false,
+                        write: false,
+                    }),
+                DELAY
+            );
+        });
+    }
 
   listSnippetDescriptors(page: number,pageSize: number): Promise<PaginatedSnippets> {
     const response: PaginatedSnippets = {
@@ -54,10 +72,13 @@ export class FakeSnippetOperations implements SnippetOperations {
     })
   }
 
-  shareSnippet(snippetId: string): Promise<Snippet> {
-    return new Promise(resolve => {
-      // @ts-expect-error, it will always find it in the fake store
-      setTimeout(() => resolve(this.fakeStore.getSnippetById(snippetId)), DELAY)
+  shareSnippet(snippetId: string, userId: string, permissions: { read: boolean; write: boolean }): Promise<void> {
+      void snippetId
+      void userId
+      void permissions
+
+      return new Promise(resolve => {
+      setTimeout(() => resolve(), DELAY)
     })
   }
 
@@ -73,31 +94,45 @@ export class FakeSnippetOperations implements SnippetOperations {
     })
   }
 
-  formatSnippet(snippetContent: string): Promise<string> {
+  formatSnippet(snippetId: string, code: string): Promise<string> {
+    void snippetId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.formatSnippet(snippetContent)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.formatSnippet(code)), DELAY)
     })
   }
 
-  getTestCases(): Promise<TestCase[]> {
+  getTestCases(snippetId: string): Promise<TestCase[]> {
+    void snippetId
     return new Promise(resolve => {
       setTimeout(() => resolve(this.fakeStore.getTestCases()), DELAY)
     })
   }
 
-  postTestCase(testCase: TestCase): Promise<TestCase> {
+  postTestCase(snippetId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    void snippetId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.postTestCase(testCase)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.postTestCase(testCase as TestCase)), DELAY)
     })
   }
 
-  removeTestCase(id: string): Promise<string> {
+  updateTestCase(snippetId: string, testId: string, testCase: Partial<TestCase>): Promise<TestCase> {
+    void snippetId
+    void testId
     return new Promise(resolve => {
-      setTimeout(() => resolve(this.fakeStore.removeTestCase(id)), DELAY)
+      setTimeout(() => resolve(this.fakeStore.updateTestCase(testCase as TestCase)), DELAY)
     })
   }
 
-  testSnippet(): Promise<TestCaseResult> {
+  removeTestCase(snippetId: string, testId: string): Promise<string> {
+    void snippetId
+    return new Promise(resolve => {
+      setTimeout(() => resolve(this.fakeStore.removeTestCase(testId)), DELAY)
+    })
+  }
+
+  testSnippet(snippetId: string, testId: string): Promise<TestCaseResult> {
+    void snippetId
+    void testId
     return new Promise(resolve => {
       setTimeout(() => resolve(this.fakeStore.testSnippet()), DELAY)
     })
