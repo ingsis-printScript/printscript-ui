@@ -1,23 +1,13 @@
-import {AUTH0_USERNAME,AUTH0_PASSWORD} from "../../src/utils/constants";
-
 describe('Protected routes test', () => {
-  it('should redirect to login when accessing a protected route unauthenticated', () => {
-    // Visit the protected route
+  const AUTH0_USERNAME = Cypress.env('AUTH0_USERNAME')
+  const AUTH0_PASSWORD = Cypress.env('AUTH0_PASSWORD')
+
+  it('should redirect to Auth0 login when accessing a protected route unauthenticated', () => {
     cy.visit('/');
 
-    cy.wait(1000)
-
-    // Check if the URL is redirected to the login page
-    cy.url().should('include', '/login');
-  });
-
-  it('should display login content', () => {
-    // Visit the login page
-    cy.visit('/login');
-
-    // Look for text that is likely to appear on a login page
-    cy.contains('Log in').should('exist');
-    cy.contains('Password').should('exist'); // Adjust the text based on actual content
+    cy.origin(Cypress.env('auth0_domain'), () => {
+      cy.get('input#username', { timeout: 15000 }).should('be.visible');
+    });
   });
 
   it('should not redirect to login when the user is already authenticated', () => {
@@ -28,10 +18,12 @@ describe('Protected routes test', () => {
 
     cy.visit('/');
 
-    cy.wait(1000)
+    cy.wait(2000)
 
-    // Check if the URL is redirected to the login page
-    cy.url().should('not.include', '/login');
+    cy.url().should('not.include', 'auth0.com');
+    cy.url().should('include', 'localhost');
+
+    cy.get('.MuiTypography-h6').should('have.text', 'Printscript');
   });
 
 })

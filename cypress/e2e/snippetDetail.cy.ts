@@ -1,32 +1,34 @@
-import {AUTH0_PASSWORD, AUTH0_USERNAME, BACKEND_URL} from "../../src/utils/constants";
-import {FakeSnippetStore} from "../../src/utils/mock/fakeSnippetStore";
-
 describe('Add snippet tests', () => {
-  const fakeStore = new FakeSnippetStore()
+  const AUTH0_USERNAME = Cypress.env('AUTH0_USERNAME')
+  const AUTH0_PASSWORD = Cypress.env('AUTH0_PASSWORD')
+
   beforeEach(() => {
-    // cy.loginToAuth0(
-    //     AUTH0_USERNAME,
-    //     AUTH0_PASSWORD
-    // )
-    cy.intercept('GET', BACKEND_URL+"/snippets/*", {
-      statusCode: 201,
-      body: fakeStore.getSnippetById("1"),
-    }).as("getSnippetById")
-    cy.intercept('GET', BACKEND_URL+"/snippets").as("getSnippets")
+     cy.loginToAuth0(
+        AUTH0_USERNAME,
+        AUTH0_PASSWORD
+     )
+    cy.intercept('GET', '/api/snippet-service/snippets-management/*').as("getSnippetById")
+    cy.intercept('GET', '/api/snippet-service/snippets-management?*').as("getSnippets")
 
     cy.visit("/")
 
-    // cy.wait("@getSnippets")
-    cy.wait(2000) // TODO comment this line and uncomment 19 to wait for the real data
+    cy.wait("@getSnippets")
     cy.get('.MuiTableBody-root > :nth-child(1) > :nth-child(1)').click();
   })
 
   it('Can share a snippet ', () => {
+    cy.intercept('GET', '/api/snippet-service/snippets-sharing*').as('getUsers');
+    cy.intercept('POST', '/api/snippet-service/snippets-sharing/share').as('shareSnippet');
+
     cy.get('[aria-label="Share"]').click();
-    cy.get('#\\:rl\\:').click();
-    cy.get('#\\:rl\\:-option-0').click();
-    cy.get('.css-1yuhvjn > .MuiBox-root > .MuiButton-contained').click();
-    cy.wait(2000)
+
+    cy.contains('Share your snippet').should('be.visible');
+    cy.get('input[type="text"]').last().type('test');
+    cy.wait('@getUsers', { timeout: 10000 });
+    cy.get('[role="option"]').first().click();
+    cy.contains('button', 'Save permissions').click();
+
+    cy.wait('@shareSnippet');
   })
 
   it('Can run snippets', function() {
@@ -45,6 +47,14 @@ describe('Add snippet tests', () => {
   });
 
   it('Can delete snippets', function() {
+    cy.intercept('DELETE', '/api/snippet-service/snippets-management/*').as('deleteSnippet');
+
     cy.get('[data-testid="DeleteIcon"] > path').click();
+
+    cy.contains('Are you sure you want to delete this snippet?').should('be.visible');
+    cy.contains('button', 'Delete').click();
+    cy.wait('@deleteSnippet');
+
+    cy.url().should('not.include', '/snippet/');
   });
 })

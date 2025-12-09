@@ -43,7 +43,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
     const {data: fileTypes} = useGetFileTypes();
     const [version, setVersion] = useState(defaultSnippet?.version ?? "");
 
-    const availableVersions = fileTypes?.find((f) => f.language === language)?.versions ?? [];
+    const availableVersions = Array.isArray(fileTypes) ? (fileTypes.find((f) => f.language === language)?.versions ?? []) : [];
 
     // Set default version when language changes
     useEffect(() => {
@@ -60,7 +60,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
             description: description,
             content: code,
             language: language,
-            extension: fileTypes?.find((f) => f.language === language)?.extension ?? "prs",
+            extension: Array.isArray(fileTypes) ? (fileTypes.find((f) => f.language === language)?.extension ?? "prs") : "prs",
             version: version
         }
 
@@ -160,7 +160,7 @@ export const AddSnippetModal = ({open, onClose, defaultSnippet, title = "Add Sni
                     sx={{width: '50%'}}
                 >
                     {
-                        fileTypes?.map(x => (
+                        Array.isArray(fileTypes) && fileTypes.map(x => (
                             <MenuItem data-testid={`menu-option-${x.language}`} key={x.language}
                                       value={x.language}>{capitalize((x.language))}</MenuItem>
                         ))

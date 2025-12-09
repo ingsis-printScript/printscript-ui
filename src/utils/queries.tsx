@@ -195,6 +195,9 @@ export const useDeleteSnippet = ({onSuccess}: {onSuccess: () => void}) => {
 
 export const useGetFileTypes = () => {
   const snippetOperations = useSnippetsOperations()
+  const {isAuthenticated} = useAuth0()
 
-  return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes());
+  return useQuery<FileType[], Error>('fileTypes', () => snippetOperations.getFileTypes(), {
+    enabled: isAuthenticated
+  });
 }

@@ -1,20 +1,20 @@
-import {BACKEND_URL} from "../../src/utils/constants";
-
 describe('Add snippet tests', () => {
+  const AUTH0_USERNAME = Cypress.env('AUTH0_USERNAME')
+  const AUTH0_PASSWORD = Cypress.env('AUTH0_PASSWORD')
+
   beforeEach(() => {
-    // cy.loginToAuth0(
-    //     AUTH0_USERNAME,
-    //     AUTH0_PASSWORD
-    // )
+    cy.loginToAuth0(
+         AUTH0_USERNAME,
+         AUTH0_PASSWORD
+     )
   })
   it('Can add snippets manually', () => {
+    cy.intercept('POST', '/api/snippet-service/snippets-management/editor').as('postRequest');
+    cy.intercept('GET', '/api/snippet-service/snippets-management*').as('getSnippets');
+
     cy.visit("/")
-    cy.intercept('POST', BACKEND_URL+"/snippets", (req) => {
-      req.reply((res) => {
-        expect(res.body).to.include.keys("id","name","content","language")
-        expect(res.statusCode).to.eq(200);
-      });
-    }).as('postRequest');
+
+    cy.wait('@getSnippets')
 
     /* ==== Generated with Cypress Studio ==== */
     cy.get('.css-9jay18 > .MuiButton-root').click();
@@ -24,24 +24,24 @@ describe('Add snippet tests', () => {
     cy.get('[data-testid="menu-option-printscript"]').click()
 
     cy.get('[data-testid="add-snippet-code-editor"]').click();
-    cy.get('[data-testid="add-snippet-code-editor"]').type(`const snippet: String = "some snippet" \n print(snippet)`);
-    cy.get('[data-testid="SaveIcon"]').click();
+    cy.get('[data-testid="add-snippet-code-editor"]').type(`const snippet: string = "some snippet"; \n println(snippet);`);
+    cy.get('[data-testid="SaveIcon"]').click({force: true});
 
     cy.wait('@postRequest').its('response.statusCode').should('eq', 200);
   })
 
   it('Can add snippets via file', () => {
+    cy.intercept('POST', '/api/snippet-service/snippets-management/editor').as('postRequest');
+    cy.intercept('GET', '/api/snippet-service/snippets-management*').as('getSnippets');
+
     cy.visit("/")
-    cy.intercept('POST', BACKEND_URL+"/snippets", (req) => {
-      req.reply((res) => {
-        expect(res.body).to.include.keys("id","name","content","language")
-        expect(res.statusCode).to.eq(200);
-      });
-    }).as('postRequest');
+
+    cy.wait('@getSnippets')
 
     /* ==== Generated with Cypress Studio ==== */
     cy.get('[data-testid="upload-file-input"').selectFile("cypress/fixtures/example_ps.ps", {force: true})
 
+    cy.get('[data-testid="SaveIcon"]', {timeout: 10000}).should('be.visible')
     cy.get('[data-testid="SaveIcon"]').click();
 
     cy.wait('@postRequest').its('response.statusCode').should('eq', 200);
